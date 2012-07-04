@@ -7,48 +7,62 @@
       character*4 nome2
       character*11 nome
       integer i, j, k
-      real*8 fc1, x, var(imax,jmax,kfour), en(imax)
+      real*8 fc1, x, var(imax,jmax,kfour), en(imax), y(jmax), a, b, c,
+     &       det
       
       call initval(var)
+  
+      do j = 1, jmax
+       if (stf .ne. 1.d0) then 
+        y(j) = dy * (stf**(j-1)-1.d0) / (stf-1.d0)
+       else
+        y(j) = dy * dble(j-1)
+       endif        
+      enddo
       
       do k = 1, kfour
+       do i = 1, imax
+       fc1 = 0.d0
+        do j = 2, jmax - 1, 2
+        det = y(j-1)**2 * ( y(j) - y(j+1) )                      
+     &        + y(j-1) * ( y(j+1)**2 - y(j)**2)               
+     &        + y(j) * y(j+1) * ( y(j)-y(j+1) ) 
+        a = (1.d0 / det) * (var(i,j-1,k)*(y(j)-y(j+1))                
+     &                      + var(i,j,k)*(y(j+1)-y(j-1))              
+     &                      + var(i,j+1,k)*(y(j-1)-y(j)))
+        b = (1.d0 / det) * (var(i,j-1,k)*(y(j+1)**2-y(j)**2)          
+     &                      + var(i,j,k)*(y(j-1)**2-y(j+1)**2)        
+     &                      - var(i,j+1,k)*(y(j-1)**2-y(j)**2))
+        c = (1.d0 / det) * (var(i,j-1,k)*y(j)*y(j+1)*(y(j)-y(j+1))    
+     &                      + var(i,j,k)*y(j-1)*y(j+1)*(y(j+1)-y(j-1))
+     &                      + var(i,j+1,k)*y(j)*y(j-1)*(y(j-1)-y(j)))
 
-        fc1 = 0.d0
-      
-        do i = 1, imax
-          fc1   = 3.d0 * var(i,1,k) / 8.d0
-          fc1   = fc1 + 7.d0 * var(i,2,k) / 6.d0
-          fc1   = fc1 + 23.d0 * var(i,3,k) / 24.d0
-          do j = 4, jmax - 3
-            fc1 = fc1 + var(i,j,k)
-          end do
-          fc1   = fc1 + 23.d0 * var(i,jmax-2,k) / 24.d0
-          fc1   = fc1 + 7.d0 * var(i,jmax-1,k) / 6.d0
-          fc1   = fc1 + 3.d0 * var(i,jmax,k) / 8.d0
-          en(i) = log10( fc1 * dy * dsqrt(Re) )
+        fc1 = fc1 + (a / 3.d0) * (y(j+1)**3-y(j-1)**3) + 
+     &                    (b / 2.d0) * (y(j+1)**2 - y(j-1)**2) + 
+     &                     c * (y(j+1)-y(j-1))
         end do
+        en(i) = log10( fc1 * dsqrt(Re) )
+       end do
+       write(*,*) ' The results are stored in the file enXX.dat' 
 
-        write(*,*) ' The results are stored in the file enXX.dat' 
-
-        if (k.le.10) then
-          write (c1,'(I1)'),k-1
-          nome  = 'en0'//c1//'.dat'
-          nome2 = 'en0'//c1
-         else
-          write (c2,'(I2)'),k-1
-          nome  = 'en'//c2//'.dat'
-          nome2 = 'en'//c2
-        end if
-        
-        open (1, file = nome ,status = 'unknown')
-        write(1,*) 'VARIABLES="x","energy"'
-        write(1,*) 'ZONE T="',nome2,'", I=',imax - 1
-        do i = 2, imax
-          x = x0 + dble(i-1) * dx
-          write(1,3) x * 10.d0, en(i)
-        end do
-        close (unit=1)
-
+       if (k.le.10) then
+         write (c1,'(I1)'),k-1
+         nome  = 'en0'//c1//'.dat'
+         nome2 = 'en0'//c1
+        else
+         write (c2,'(I2)'),k-1
+         nome  = 'en'//c2//'.dat'
+         nome2 = 'en'//c2
+       end if
+       
+       open (1, file = nome ,status = 'unknown')
+       write(1,*) 'VARIABLES="x","energy"'
+       write(1,*) 'ZONE T="',nome2,'", I=',imax - 1
+       do i = 2, imax
+         x = x0 + dble(i-1) * dx
+         write(1,3) x * 10.d0, en(i)
+       end do
+       close (unit=1)
       end do
     3 format(1x,2d17.9)
 
@@ -74,7 +88,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! Disturbances variables data
       inter = 2**( msh - 1 ) * ( stencil - 2 )
-      do my_rank = 0, 7
+      do my_rank = 0, np - 1
         if (my_rank.le.9) then
           write (c1,'(I1)'),my_rank
           nome='data_0'//c1//'.bin'
