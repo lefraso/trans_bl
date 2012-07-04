@@ -1,0 +1,25 @@
+#PBS -N cmp_stf_1_665
+#PBS -l nodes=n44:ppn=1:dodeca
+#PBS -o /cluster/josuelkr/teste_3D
+#PBS -e /cluster/josuelkr/teste_3D
+
+echo "Nos reservados:"
+cat $PBS_NODEFILE
+sleep 5
+echo "Iniciando o daemon do MPD..."
+mpdboot -n 1 -f $PBS_NODEFILE
+sleep 5
+echo "Executando em cada no"
+cd /temp
+rm -r josuelkr/n665_2
+mkdir -p josuelkr/n665_2
+cd josuelkr/n665_2
+cp /home/josuelkr/cmp/stf/new/* .
+sleep 5
+make ru
+mpiexec -np 1 ./rugos >> saida
+sleep 5
+echo "Saindo do daemon do MPD..."
+mkdir /cluster/josuelkr/cmp/stf/new/resultados_new_s
+cp * /cluster/josuelkr/cmp/stf/new/resultados_new_s/.
+echo "Sucesso!"

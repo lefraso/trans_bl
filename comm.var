@@ -1,0 +1,7 @@
+      complex*16 ux(ptsx,jmax,kfour), wx(ptsx,jmax,kfour),
+     &           uy(ptsx,jmax,kfour), wy(ptsx,jmax,kfour),
+     &           uz(ptsx,jmax,kfour), wz(ptsx,jmax,kfour)
+      real*8 duexmdx(ptsx)
+
+      common/var/ ux, uy, uz, wx, wy, wz
+      common/due/ duexmdx

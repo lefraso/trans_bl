@@ -1,0 +1,3 @@
+      integer numproc, my_rank, ierr, inter, shift
+
+      common/path/ numproc, my_rank, ierr, inter, shift
