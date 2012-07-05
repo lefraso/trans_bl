@@ -3,7 +3,7 @@ c                                                       c
 c         nonlinear terms calculation                   c
 c                                                       c
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      subroutine lterms(a,b,c)
+      subroutine lterms_fi(a,b,c)
 
       implicit none
       include 'par.for'
@@ -38,7 +38,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      subroutine nlterms(a,b,c)
+      subroutine nlterms_fi(a,b,c)
 
       ! calculate the non linear terms of transport
       ! equations, in terms are ux, uy, uz, wx, wy and wz and  
@@ -81,6 +81,100 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       call p_to_f(ap,a)
       call p_to_f(bp,b)
       call p_to_f(cp,c)
+
+      return
+      end
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine lterms_gv(a,b,c,d)
+
+      implicit none
+      include 'par.for'
+      include 'comm.var'
+      integer i, j, k
+      real*8 uxb(ptsx,jmax),uyb(ptsx,jmax),wzb(ptsx,jmax)
+      complex*16 a(ptsx,jmax,kfour),   b(ptsx,jmax,kfour),
+     &           c(ptsx,jmax,kfour),   d(ptsx,jmax,kfour)
+      common/blas/ uxb,uyb,wzb
+
+      do k = 1, kfour
+        do j = 1, jmax
+          do i = 1, ptsx
+            a(i,j,k) =   uyb(i,j) * wx(i,j,k) - wy(i,j,k) * uxb(i,j)
+            b(i,j,k) =   uxb(i,j) * wz(i,j,k) + ux(i,j,k) * wzb(i,j)
+            c(i,j,k) = - uyb(i,j) * wz(i,j,k) - uy(i,j,k) * wzb(i,j)
+            d(i,j,k) =   2.d0 * uxb(i,j) * ux(i,j,k)
+          end do
+        end do
+      end do
+
+      return
+      end
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine nlterms_gv(a,b,c,d)
+
+      ! calculate the non linear terms of transport
+      ! equations, in terms are ux, uy, uz, wx, wy and wz and  
+      ! out terms are a, b, c and d
+      !		a = uy * wx - ux * wy
+      !		b = ux * wz - uz * wx
+      !		c = uz * wy - uy * wz
+      !		d = (Uxb + ux)^2
+      implicit none
+      include 'par.for'
+      include 'comm.var'
+      integer i, j, k
+      real*8 uxb(ptsx,jmax), uyb(ptsx,jmax), wzb(ptsx,jmax),
+     &          uxp(ptsx,jmax,kphys), wxp(ptsx,jmax,kphys),
+     &          uyp(ptsx,jmax,kphys), wyp(ptsx,jmax,kphys),
+     &          uzp(ptsx,jmax,kphys), wzp(ptsx,jmax,kphys),
+     &           ap(ptsx,jmax,kphys),  bp(ptsx,jmax,kphys),
+     &           cp(ptsx,jmax,kphys),  dp(ptsx,jmax,kphys)
+      complex*16  a(ptsx,jmax,kfour),   b(ptsx,jmax,kfour),
+     &            c(ptsx,jmax,kfour),   d(ptsx,jmax,kfour)
+      common/blas/ uxb,uyb,wzb
+
+      ! fft transforms from fourier to physical space
+      call f_to_p(uxp,ux)
+      call f_to_p(uyp,uy)
+      call f_to_p(uzp,uz)
+      call f_to_p(wxp,wx)
+      call f_to_p(wyp,wy)
+      call f_to_p(wzp,wz)
+
+      ! nonlinear terms calculation in physical space
+      do k = 1, kphys
+        do j = 1, jmax
+          do i = 1, ptsx
+           ap(i,j,k) = uyp(i,j,k) * wxp(i,j,k) - uxp(i,j,k) * wyp(i,j,k)
+           bp(i,j,k) = uxp(i,j,k) * wzp(i,j,k) - uzp(i,j,k) * wxp(i,j,k)
+           cp(i,j,k) = uzp(i,j,k) * wyp(i,j,k) - uyp(i,j,k) * wzp(i,j,k)
+           dp(i,j,k) = uxp(i,j,k) * uxp(i,j,k)
+          end do
+        end do
+      end do
+
+      ! fft back from physical to fourier space
+      call p_to_f(ap,a)
+      call p_to_f(bp,b)
+      call p_to_f(cp,c)
+      call p_to_f(dp,d)
+
+      ! adding the base flow to the nonlinear product
+      do k = 1, kfour
+        do j = 1, jmax
+          do i = 1, ptsx
+            a(i,j,k) =   uyb(i,j) * wx(i,j,k) - uxb(i,j) * wy(i,j,k) + 
+     &                   a(i,j,k)
+            b(i,j,k) =   uxb(i,j) * wz(i,j,k) + ux(i,j,k) * wzb(i,j) +
+     &                   b(i,j,k)
+            c(i,j,k) = - uyb(i,j) * wz(i,j,k) - uy(i,j,k) * wzb(i,j) +
+     &                   c(i,j,k)
+            d(i,j,k) =   2.d0 * uxb(i,j) * ux(i,j,k) + d(i,j,k)
+          end do
+        end do
+      end do
 
       return
       end

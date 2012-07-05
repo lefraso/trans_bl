@@ -10,23 +10,30 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       include 'comm.par'
       include 'comm.var'
       include 'mpif.h'
-      integer i, j, k
-      real*8 ep, fc, bdfc(imax)
+      integer i, j, k, bdt
+      real*8 ep, fc, bdfc(2,imax)
       real*8 uxb(ptsx,jmax), uyb(ptsx,jmax), wzb(ptsx,jmax)
       common/blas/ uxb,uyb,wzb
       common/bd/ bdfc
 
       do k = 1, kfour
+        bdt = 1
+        if (k.eq.3) bdt = 2
         do j = 2, jmax
           do i = 1, ptsx
-            wx(i,j,k) = wx(i,j,k) * bdfc(i+shift)
-            wy(i,j,k) = wy(i,j,k) * bdfc(i+shift)
-            if (k.eq.1) then 
-              wz(i,j,k) = ( wz(i,j,k) - wzb(i,j) ) * bdfc(i+shift)
-     &                  + wzb(i,j)
-             else
-              wz(i,j,k) = wz(i,j,k) * bdfc(i+shift)
-            end if
+            wx(i,j,k) = wx(i,j,k) * bdfc(bdt,i+shift)
+            wy(i,j,k) = wy(i,j,k) * bdfc(bdt,i+shift)
+            select case (my_form)
+             case(0)
+              if (k.eq.1) then 
+                wz(i,j,k) = ( wz(i,j,k) - wzb(i,j) ) * bdfc(bdt,i+shift)
+     &                    + wzb(i,j)
+               else
+                wz(i,j,k) = wz(i,j,k) * bdfc(bdt,i+shift)
+              end if
+             case(1)
+               wz(i,j,k) = wz(i,j,k) * bdfc(bdt,i+shift)
+            end select
           end do
         end do
       end do
@@ -53,14 +60,13 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! uy calculation for the last point in the last computer
       ! these values are used as dirichlet BC at end of domain
-c     if (my_rank.eq.numproc) then
-c       do k = 1, kfour
+      if (my_rank.eq.numproc) then
+        do k = 1, kfour
 
 c         call lhsoutuy(a,k)
 c         call bandy5(a,al,indx)
 
 c         rhs(1) =  dcmplx(0.d0,0.d0)
-
 c         dyya   =  dyy 
 c         rhs(2) = - dyya * ( sp_poi_coef(2,1) * dwzdx(ptsx,2,k)
 c    &                      + sp_poi_coef(3,1) * dwzdx(ptsx,3,k) )
@@ -84,12 +90,23 @@ c    &                 - dya * lp_poi_coef(2,1) * alpha*uyb(ptsx,jmax)
 c         endif 
 
 c         call banbky5(a,al,indx,rhs)
-
-c         do j = 2, jmax
-c           uy(ptsx,j,k) = rhs(j)
-c         end do
-c       end do
-c     end if
+          select case (my_form)
+           case(0)
+            if (k.eq.1) then 
+              do j = 2, jmax
+c               uy(ptsx,j,k) = rhs(j)
+                uy(ptsx,j,k) = uyb(ptsx,j)
+              end do
+             else
+c             uy(ptsx,j,k) = rhs(j)
+              uy(ptsx,j,k) = dcmplx(0.d0,0.d0)
+            end if
+           case(1)
+c            uy(ptsx,j,k) = rhs(j)
+             uy(ptsx,j,k) = dcmplx(0.d0,0.d0)
+          end select
+        end do
+      end if
 
       return
       end
@@ -139,7 +156,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       a(jmax,2) = lp_poi_coef(4,1)
       a(jmax,3) = lp_poi_coef(3,1) + v_k2b2(k) * dyya 
      &          - lp_poi_coef(2,1) * dya * dsqrt(alpha * alpha
-     &          + dble(k - 1) * dble(k - 1) * beta * beta)
+     &          - v_k2b2(k))
       a(jmax,4) = 0.d0
       a(jmax,5) = 0.d0
 
@@ -652,27 +669,36 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       subroutine bzonew
 
-      ! outflow boundary condition for v with 6th order compact appx.
       implicit none
       include 'par.for'
       include 'comm.par'
       include 'comm.var'
-      integer i, k
-      real*8 ep, fc, bdfc(imax)
+      include 'mpif.h'
+      integer i, j, k, bdt
+      real*8 ep, fc, bdfc(2,imax)
       real*8 uxb(ptsx,jmax), uyb(ptsx,jmax), wzb(ptsx,jmax)
       common/blas/ uxb,uyb,wzb
       common/bd/ bdfc
 
       do k = 1, kfour
-        do i = 1, ptsx
-          wx(i,1,k) = wx(i,1,k) * bdfc(i+shift)
-          wy(i,1,k) = wy(i,1,k) * bdfc(i+shift)
-          if (k.eq.1) then 
-            wz(i,1,k) = (wz(i,1,k) - wzb(i,1)) * bdfc(i+shift)
-     &                + wzb(i,1)
-           else
-            wz(i,1,k) = wz(i,1,k) * bdfc(i+shift)
-          end if
+        bdt = 1
+        if (k.eq.3) bdt = 2
+        do j = 2, jmax
+          do i = 1, ptsx
+            wx(i,1,k) = wx(i,1,k) * bdfc(bdt,i+shift)
+            wy(i,1,k) = wy(i,1,k) * bdfc(bdt,i+shift)
+            select case (my_form)
+             case(0)
+              if (k.eq.1) then 
+                wz(i,1,k) = ( wz(i,1,k) - wzb(i,j) ) * bdfc(bdt,i+shift)
+     &                    + wzb(i,j)
+               else
+                wz(i,1,k) = wz(i,1,k) * bdfc(bdt,i+shift)
+              end if
+             case(1)
+               wz(i,1,k) = wz(i,1,k) * bdfc(bdt,i+shift)
+            end select
+          end do
         end do
       end do
 

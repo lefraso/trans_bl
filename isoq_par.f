@@ -75,9 +75,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       implicit none
       include 'par.for'
-      character c1
-      character*2 c2
-      character*11 nome
+      character*15 nome
       integer i, j, t, my_rank, k, inter, shift
       complex*16  ux(ptsx,jmax,kfour),  wx(ptsx,jmax,kfour),
      &            uy(ptsx,jmax,kfour),  wy(ptsx,jmax,kfour),
@@ -88,14 +86,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       
       ! variables data
       inter = 2**( msh - 1 ) * ( stencil - 2 )
-      do my_rank = 0, 7
-        if (my_rank.le.9) then
-          write (c1,'(I1)'),my_rank
-          nome='data_0'//c1//'.bin'
-         else
-          write (c2,'(I2)'),my_rank
-          nome = 'data_'//c2//'.bin'
-        end if
+      do my_rank = 0, np - 1
+        write(nome,'(a,i0.2,a)')'data_',my_rank,'.bin'
         open(2,file=nome,form='unformatted')
         read(2) t
         read(2) ux,uy,uz,wx,wy,wz

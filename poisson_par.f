@@ -141,12 +141,15 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         sc(i,jmax-1,1) = v_kb(k) * wx(i,jmax-1,k) - dwzdx(i,jmax-1,k)
         sc(i,jmax,1) = lp_poi_coef(1,1) * 
      &                 (v_kb(k) * wx(i,jmax,k) - dwzdx(i,jmax,k))
-        if (k.eq.1) then
-         dya = dy * stf**(jmax-3)
-         sc(i,jmax,1) = - lp_poi_coef(1,1) * dwzdx(i,jmax,k)
-     &                + lp_poi_coef(2,1)   * duexmdx(i) / dya
-     &                - lp_poi_coef(2,1)   * alpha * uyb(i,jmax) / dya
-        endif
+        select case (my_form)
+         case(0)
+          if (k.eq.1) then
+           dya = dy * stf**(jmax-3)
+           sc(i,jmax,1) = - lp_poi_coef(1,1) * dwzdx(i,jmax,k)
+     &                  + lp_poi_coef(2,1)   * duexmdx(i) / dya
+     &                  - lp_poi_coef(2,1)   * alpha * uyb(i,jmax) / dya
+          endif
+        end select
       end do
 
       ! function of the Poisson equation

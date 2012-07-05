@@ -7,10 +7,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       implicit none
       include 'par.for'
-      character c1, c2
-      character*2 c3
-      character*10 nome2
-      character*12 nome
+      character*15 nome, nome2
       integer i, j, k, f, N, MM, jj
       parameter ( N = 16, MM = 4 )
       real*8 a(N), b(N), A1x(imax/2+1,jmax,N)
@@ -72,16 +69,8 @@ c             end if
 
         do f = 1, N / 2
 
-          write (c2,'(I1)'),f-1
-          if (k.le.10) then
-            write (c1,'(I1)'),k-1
-            nome='mode'//c2//'_'//c1//'.dat'
-            nome2='mode('//c2//','//c1//')'
-           else
-            write (c3,'(I2)'),k-1
-            nome='mode'//c3//'_'//c1//'.dat'
-            nome2='mode('//c3//','//c1//')'
-          end if
+          write(nome,'(a,i0.2,a,i0.2,a)')'mode',f-1,'_', k-1,'.dat'
+          write(nome2,'(a,i0.2,a,i0.2)')'mode',f-1,'_', k-1
 
           open (1, file = nome, status = 'unknown')
           write(1,*) 'VARIABLES="x","U_max","alfa_ux"'
@@ -114,7 +103,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &           ux_f(imax/2+1,jmax,kfour,N)
 
       inter = 2**( msh - 1 ) * ( stencil - 2 )
-      do my_rank = 0, 7
+      do my_rank = 0, np - 1
         shift = my_rank * (ptsx - inter - 1)
         do f = 1, N
           write(nm,'(a,i0.2,a,i0.2)')'pert_',my_rank,'_',f

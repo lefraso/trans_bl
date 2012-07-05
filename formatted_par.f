@@ -7,9 +7,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       implicit none
       include 'par.for'
-      character c1
-      character*2 c2
-      character*11 nome
+      character*15 nome
       integer i, j, k, t, my_rank, inter, shift
       real*8 x, y, z,
      &           uxp(imax,jmax,kphys), wxp(imax,jmax,kphys),
@@ -23,21 +21,11 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &            uz(ptsx,jmax,kfour),  wz(ptsx,jmax,kfour)
       real*8 uxbt(imax,jmax), uybt(imax,jmax), wzbt(imax,jmax)
 
-      open(1,file='basens.bin',form='unformatted')
-      read(1)
-      read(1) uxbt, uybt, wzbt
-      close(unit=1)
 
       ! Disturbances variables data
       inter = 2**( msh - 1 ) * ( stencil - 2 )
-      do my_rank = 0, 7
-        if (my_rank.le.9) then
-          write (c1,'(I1)'),my_rank
-          nome='data_0'//c1//'.bin'
-         else
-          write (c2,'(I2)'),my_rank
-          nome = 'data_'//c2//'.bin'
-        end if
+      do my_rank = 0, np - 1
+        write(nome,'(a,i0.2,a)')'data_',my_rank,'.bin'
         open(2,file=nome,form='unformatted')
         read(2) t
         read(2) ux,uy,uz,wx,wy,wz
@@ -56,6 +44,21 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           end do
         end do
       end do
+
+      select case (my_form)
+       case(0)
+        open(1,file='basens.bin',form='unformatted')
+        read(1)
+        read(1) uxbt, uybt, wzbt
+        close(unit=1)
+        do j = 1, jmax
+          do i = 1, imax
+            uxt(i,j,1) = uxt(i,j,1) - uxbt(i,j)
+            uyt(i,j,1) = uyt(i,j,1) - uybt(i,j)
+            wzt(i,j,1) = wzt(i,j,1) - wzbt(i,j)
+          end do
+        end do
+      end select
 
       call f_to_p(uxp,uxt)
       call f_to_p(uyp,uyt)
@@ -79,14 +82,9 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         endif        
         do i = 1, imax
           x = x0 + dble(i-1) * dx
-          write(3,5)x,y,z,uxp(i,j,kphys)-uxbt(i,j),
-     &              uyp(i,j,kphys)-uybt(i,j),uzp(i,j,kphys),
-     &              wxp(i,j,kphys),wyp(i,j,kphys),
-     &              wzp(i,j,kphys)-wzbt(i,j)
-c         write(3,5)x,y,z,uxp(i,j,kphys),
-c    &              uyp(i,j,kphys),uzp(i,j,kphys),
-c    &              wxp(i,j,kphys),wyp(i,j,kphys),
-c    &              wzp(i,j,kphys)
+          write(3,5)x, y, z, uxp(i,j,kphys), uyp(i,j,kphys), 
+     &              uzp(i,j,kphys), wxp(i,j,kphys), wyp(i,j,kphys),
+     &              wzp(i,j,kphys)
         end do
       end do
 
@@ -100,14 +98,8 @@ c    &              wzp(i,j,kphys)
           endif        
           do i = 1, imax
             x = x0 + dble(i-1) * dx
-          write(3,5)x,y,z,uxp(i,j,k)-uxbt(i,j),
-     &              uyp(i,j,k)-uybt(i,j),uzp(i,j,k),
-     &              wxp(i,j,k),wyp(i,j,k),
-     &              wzp(i,j,k)-wzbt(i,j)
-c         write(3,5)x,y,z,uxp(i,j,k),
-c    &              uyp(i,j,k),uzp(i,j,k),
-c    &              wxp(i,j,k),wyp(i,j,k),
-c    &              wzp(i,j,k)
+          write(3,5)x, y, z, uxp(i,j,k), uyp(i,j,k), uzp(i,j,k),
+     &              wxp(i,j,k), wyp(i,j,k), wzp(i,j,k)
           end do
         end do
       end do

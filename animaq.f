@@ -78,9 +78,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       implicit none
       include 'par.for'
-      character c1, comp
-      character*2 c2, comp2
-      character*10 nome
+      character*15 nome
       integer i, j, t, my_rank, k, inter, shift, var
       complex*16  ux(ptsx,jmax,kfour),  uy(ptsx,jmax,kfour),
      &            uz(ptsx,jmax,kfour), uxt(imax,jmax,kfour),
@@ -89,26 +87,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       
       ! variables data
       inter = 2**( msh - 1 ) * ( stencil - 2 )
-      do my_rank = 0, 3
-        if (my_rank.le.9) then
-          write (comp,'(I1)'),my_rank
-          if (var.lt.10) then
-            write (c1,'(I1)'),var
-            nome='pert_0'//comp//'_0'//c1
-           else
-            write (c2,'(I2)'),var
-            nome='pert_0'//comp//'_'//c2
-          end if
-         else
-          write (comp2,'(I2)'),my_rank
-          if (var.lt.10) then
-            write (c1,'(I1)'),var
-            nome='pert_'//comp2//'_0'//c1
-           else
-            write (c2,'(I2)'),var
-            nome='pert_'//comp2//'_'//c2
-          end if
-        end if
+      do my_rank = 0, np - 1
+        write(nome,'(a,i0.2,a,i0.2)')'pert_',my_rank,'_',var
         open(1,file=nome,form='unformatted')
         read(1) ux,uy,uz
         close (unit=1)
@@ -133,21 +113,13 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       ! write the results in fourier modes
       implicit none
       include 'par.for'
-      character c1
-      character*2 c2
-      character*11 nome
+      character*15 nome
       integer i, j, k, var
       real*8 x, y, z
       real*8 Q(imax,jmax,kphys)
 
       ! writes data to spacial space to be open by tecplot
-      if (var.lt.10) then
-        write (c1,'(I1)'),var
-        nome='isoq_0'//c1//'.dat'
-       else
-        write (c2,'(I2)'),var
-        nome='isoq_'//c2//'.dat'
-      end if
+      write(nome,'(a,i0.2,a)')'isoq_',var,'.dat'
       open (3, file = nome,status = 'unknown')
       write(3,*) 'VARIABLES="x","y","z","Q"'
       write(3,*) 'ZONE I=',imax/2+1,',J=',jmax,',K=',kphys+1,',F=POINT'

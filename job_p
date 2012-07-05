@@ -1,7 +1,7 @@
-#PBS -N cmp
+#PBS -N gv_beta_0
 #PBS -l nodes=1:ppn=8:dodeca
-#PBS -o /cluster/lefraso/prg_18062012
-#PBS -e /cluster/lefraso/prg_18062012
+#PBS -o /cluster/josuelkr
+#PBS -e /cluster/josuelkr
 
 echo "Nos reservados:"
 cat $PBS_NODEFILE
@@ -10,17 +10,38 @@ echo "Iniciando o daemon do MPD..."
 mpdboot -n 1 -f $PBS_NODEFILE
 sleep 5
 echo "Executando em cada no"
+
 cd /temp
-rm -r lefraso
-mkdir -p lefraso
-cd lefraso
-cp /home/lefraso/prg_18062012/* .
+rm -r josuelkr 
+mkdir -p josuelkr
+cd josuelkr
+cp -r /home/josuelkr/gv/* .
 sleep 5
-make ru
-mpiexec -np 8 ./rugos >> saida
+
+cd pre_processing
+make clean
+make
+./coef
+make fs
+
+cd ../baseflow2D
+make clean
+make 
+mpiexec -np 8 ./basef >> saida_base
+
+gfortran format_base.f -o prg
+./prg 
+
+cd ..
+rm *.o
+make
+
+mpiexec -np 8 ./prog >> saida
+
 sleep 5
 echo "Saindo do daemon do MPD..."
 mpdallexit
-mkdir /cluster/lefraso/prg_18062012/result01
-cp * /cluster/lefraso/prg_18062012/result01/.
+
+mkdir /cluster/josuelkr/result_gv_betafs_0
+cp -r * /cluster/josuelkr/result_gv_betafs_0/.
 echo "Sucesso!"

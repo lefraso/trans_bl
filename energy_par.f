@@ -1,23 +1,19 @@
-      program energy 19012009
+      program energy 05072012
 
       implicit none
       include 'par.for'
-      character c1
-      character*2 c2
-      character*4 nome2
-      character*11 nome
+      character*15 nome, nome2
       integer i, j, k
       real*8 fc1, x, var(imax,jmax,kfour), en(imax), y(jmax), a, b, c,
      &       det
       
       call initval(var)
-  
       do j = 1, jmax
-       if (stf .ne. 1.d0) then 
-        y(j) = dy * (stf**(j-1)-1.d0) / (stf-1.d0)
-       else
-        y(j) = dy * dble(j-1)
-       endif        
+        if (stf .ne. 1.d0) then 
+         y(j) = dy * (stf**(j-1)-1.d0) / (stf-1.d0)
+        else
+         y(j) = dy * dble(j-1)
+        endif        
       enddo
       
       do k = 1, kfour
@@ -45,24 +41,17 @@
        end do
        write(*,*) ' The results are stored in the file enXX.dat' 
 
-       if (k.le.10) then
-         write (c1,'(I1)'),k-1
-         nome  = 'en0'//c1//'.dat'
-         nome2 = 'en0'//c1
-        else
-         write (c2,'(I2)'),k-1
-         nome  = 'en'//c2//'.dat'
-         nome2 = 'en'//c2
-       end if
-       
+       write(nome,'(a,i0.2,a)')'en',k-1,'.dat'
+       write(nome2,'(a,i0.2)')'en',k-1
        open (1, file = nome ,status = 'unknown')
        write(1,*) 'VARIABLES="x","energy"'
        write(1,*) 'ZONE T="',nome2,'", I=',imax - 1
        do i = 2, imax
          x = x0 + dble(i-1) * dx
-         write(1,3) x * 10.d0, en(i)
+         write(1,3) x, en(i)
        end do
        close (unit=1)
+
       end do
     3 format(1x,2d17.9)
 
@@ -75,9 +64,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       ! subroutine to read the values
       implicit none
       include 'par.for'
-      character c1
-      character*2 c2
-      character*11 nome
+      character*15 nome
       integer i, j, k, t, inter, shift, my_rank
       real*8 var(imax,jmax,kfour)
       complex*16  ux(ptsx,jmax,kfour),  wx(ptsx,jmax,kfour),
@@ -89,13 +76,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       ! Disturbances variables data
       inter = 2**( msh - 1 ) * ( stencil - 2 )
       do my_rank = 0, np - 1
-        if (my_rank.le.9) then
-          write (c1,'(I1)'),my_rank
-          nome='data_0'//c1//'.bin'
-         else
-          write (c2,'(I2)'),my_rank
-          nome = 'data_'//c2//'.bin'
-        end if
+        write(nome,'(a,i0.2,a)')'data_',my_rank,'.bin'
         open(2,file=nome,form='unformatted')
         read(2) t
         read(2) ux,uy,uz,wx,wy,wz
