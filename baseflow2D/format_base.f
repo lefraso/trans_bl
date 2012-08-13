@@ -17,7 +17,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! Disturbances variables data
       inter = 2**( msh - 1 ) * ( stencil - 2 )
-      do my_rank = 0, 3
+      do my_rank = 0, np - 1
         write(nm,'(a,i0.2,a)')'based_',my_rank,'.bin'
         open(1,file=nm,form='unformatted')
         read(1) 

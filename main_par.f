@@ -273,8 +273,9 @@ c       do t = t0, tt
           end do
           ! disturbance introductions
           if (my_rank.eq.0) then
+            call gv_pert(t)
 c           call ts2d_pert(t, 0.5d0)
-            call ts3d_pert(t, 0.5d0)
+c           call ts3d_pert(t, 0.5d0)
           end if
           call loop(1d-5)
         
@@ -310,8 +311,9 @@ c           call ts2d_pert(t, 0.5d0)
           end do
           ! disturbance introductions
           if (my_rank.eq.0) then
+            call gv_pert(t)
 c           call ts2d_pert(t, 1.d0)
-            call ts3d_pert(t, 1.d0)
+c           call ts3d_pert(t, 1.d0)
           end if
           call loop(1d-5)
         
@@ -948,6 +950,38 @@ c     call lterms_gv(a, b, c, d)
 
           end do
         end do
+      end do
+
+      return
+      end
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine gv_pert(t)
+
+      ! introduces GV perturbations in the flow between i1 and i2
+      implicit none
+      include 'par.for'
+      include 'comm.var'
+      integer i, t
+      real*8 A, ep, fcx2(i2), fcllx2(i2)
+      complex*16 d2uydx2(ptsx,kfour)
+      common/equa2/ fcx2,fcllx2
+      common/derw/ d2uydx2
+
+      A = 1.35d-3
+      
+c     if (t.eq.1) call wdata2(a)
+      
+      ! this is to initialize the amplitude of
+      ! disturbance smoothly in 1 period (lamb=stpp*dt)
+c     if (t.lt.stpp) then
+c       ep = dble(t)/dble(stpp)
+c       A  = A*((6.d0*ep-15.d0)*ep+10.d0)*ep**3
+c     end if
+      
+      do i = i1 + 1, i2 - 1
+        uy(i,1,2)    = dcmplx( A*fcx2(i), 0.d0 )
+        d2uydx2(i,2) = dcmplx( A*fcllx2(i), 0.d0 )
       end do
 
       return

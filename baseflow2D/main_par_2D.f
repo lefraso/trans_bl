@@ -281,7 +281,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &           uwz(ptsx,jmax),      vwz(ptsx,jmax),
      &        duwzdx(ptsx,jmax),   dvwzdy(ptsx,jmax),
      &            dv(ptsx,jmax)
-      common/dwdx/ dwzdx
 
       do j = 1, jmax
         do i = 1, ptsx

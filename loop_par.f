@@ -138,9 +138,9 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       do j = 3, jmax - 2
         dyya = ( dy * stf**(j-3) ) ** 2
         a(j,1) = cp_poi_coef(4,1)
-        a(j,2) = cp_poi_coef(5,1) + sp_poi_coef(1,1) * v_k2b2(k) * dyya
-        a(j,3) = cp_poi_coef(6,1) + sp_poi_coef(2,1) * v_k2b2(k) * dyya
-        a(j,4) = cp_poi_coef(7,1) + sp_poi_coef(3,1) * v_k2b2(k) * dyya
+        a(j,2) = cp_poi_coef(5,1) + cp_poi_coef(1,1) * v_k2b2(k) * dyya
+        a(j,3) = cp_poi_coef(6,1) + cp_poi_coef(2,1) * v_k2b2(k) * dyya
+        a(j,4) = cp_poi_coef(7,1) + cp_poi_coef(3,1) * v_k2b2(k) * dyya
         a(j,5) = cp_poi_coef(8,1)
       end do
 
