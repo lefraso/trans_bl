@@ -1,8 +1,9 @@
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c                                                       c
-c                 loop calculations                     c
-c                                                       c
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c                                                                     c
+c                         loop calculations                           c
+c                                                                     c
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine outuy
 
       ! outflow uy calculation with 6th order compact appx.
@@ -22,8 +23,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         call lhsoutuy(a)
         call bandy5(a,al,indx)
         rhs(1) = 0.d0
-        rhs(2) = - dy * dy * ( sp_poi_coef(2,1) * dwzdx(ptsx,2) + 
-     &                         sp_poi_coef(3,1) * dwzdx(ptsx,3) )
+        rhs(2) = - dy * dy * ( sp_poi_coef(2,1) * dwzdx(ptsx,2)
+     &                       + sp_poi_coef(3,1) * dwzdx(ptsx,3) )
         do j = 3, jmax - 2
           dya = dy * stf**(j-3)
           rhs(j) = - dya*dya * ( cp_poi_coef(1,1) * dwzdx(ptsx,j-1)
@@ -38,9 +39,9 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         call banbky5(a,al,indx,rhs)
         do j = 2, jmax
 c         uy(ptsx,j) = rhs(j)
-          uy(ptsx,j) = (770.d0 * uy(ptsx-1,j) - 1070.d0 * uy(ptsx-2,j) +
-     &                  780.d0 * uy(ptsx-3,j) - 305.d0 * uy(ptsx-4,j)+
-     &                   50.d0 * uy(ptsx-5,j))/225.d0
+          uy(ptsx,j) = ( 770.d0 * uy(ptsx-1,j) - 1070.d0 * uy(ptsx-2,j)
+     &                 + 780.d0 * uy(ptsx-3,j) -  305.d0 * uy(ptsx-4,j)
+     &                 +  50.d0 * uy(ptsx-5,j) ) / 225.d0
         end do
 
       end if
@@ -48,7 +49,8 @@ c         uy(ptsx,j) = rhs(j)
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine lhsoutuy(a)
 
       ! LHS of the uy calculation
@@ -93,11 +95,12 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine wz_wall
 
-      ! calculate the vorticity in z direction 
-      ! at wall using the v-poisson equation
+      ! calculate the vorticity in z direction at the wall using the
+      ! v-poisson equation
       ! the variable lapv comes from subroutine wx_wall
       implicit none
       include '../par.for'
@@ -110,18 +113,18 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       real*8 rhs(ptsx), aux(2)
 
       do i = 1, ptsx
-        rhs(i) = -( w_at_w_coef(3) * uy(i,1)
-     &            + w_at_w_coef(4) * uy(i,2)
-     &            + w_at_w_coef(5) * uy(i,3)
-     &            + w_at_w_coef(6) * uy(i,4)
-     &            + w_at_w_coef(7) * uy(i,5)
-     &            + w_at_w_coef(8) * uy(i,6)
-     &            + w_at_w_coef(9) * uy(i,7) )
-     &            / ( dyy * w_at_w_coef(1) )
+        rhs(i) = - ( w_at_w_coef(3) * uy(i,1)
+     &             + w_at_w_coef(4) * uy(i,2)
+     &             + w_at_w_coef(5) * uy(i,3)
+     &             + w_at_w_coef(6) * uy(i,4)
+     &             + w_at_w_coef(7) * uy(i,5)
+     &             + w_at_w_coef(8) * uy(i,6)
+     &             + w_at_w_coef(9) * uy(i,7) )
+     &             / ( dyy * w_at_w_coef(1) )
       end do
 
       if (my_rank.gt.0) then
-        call MPI_Recv(aux, 2, mpi_double_precision, my_rank - 1, 
+        call MPI_Recv(aux, 2, mpi_double_precision, my_rank - 1,
      &                571, MPI_COMM_WORLD, status, ierr)
         wz(1,1) = aux(1)
         wz(2,1) = aux(2)
@@ -129,33 +132,33 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         wz(2,1) = ( dx * ( 251.d0 * rhs(1)   + 646.d0 * rhs(2)
      &                   - 264.d0 * rhs(3)   + 106.d0 * rhs(4)
      &                   -  19.d0 * rhs(5) ) + 720.d0 * wz(1,1) )
-     &              / 720.d0
+     &            / 720.d0
       end if
 
       do i = 3, ptsx - 2
         wz(i,1) = ( dx * (  281.d0 * rhs(i-2) + 2056.d0 * rhs(i-1)
      &                   + 1176.d0 * rhs(i)   -  104.d0 * rhs(i+1)
      &                   +   11.d0 * rhs(i+2) ) / 90.d0
-     &              + 11.d0 * wz(i-2,1) + 16.d0 * wz(i-1,1) )
-     &              / 27.d0
+     &            + 11.d0 * wz(i-2,1) + 16.d0 * wz(i-1,1) )
+     &            / 27.d0
       end do
 
       if (my_rank.lt.numproc) then
         aux(1) = wz(ptsx-inter,1)
         aux(2) = wz(ptsx-inter+1,1)
-        call MPI_Send(aux, 2, mpi_double_precision, my_rank + 1, 
+        call MPI_Send(aux, 2, mpi_double_precision, my_rank + 1,
      &                571, MPI_COMM_WORLD, ierr)
        else
         i = ptsx - 1
         wz(i,1) = ( dx * ( 10.d0 * rhs(i-2) + 57.d0 * rhs(i-1)
      &                   + 24.d0 * rhs(i)   -         rhs(i+1) )
-     &              + 33.d0 * wz(i-2,1) + 24.d0 * wz(i-1,1) )
-     &              / 57.d0
+     &            + 33.d0 * wz(i-2,1) + 24.d0 * wz(i-1,1) )
+     &            / 57.d0
         i = ptsx
         wz(i,1) = ( dx * ( 251.d0 * rhs(i)   + 646.d0 * rhs(i-1)
      &                   - 264.d0 * rhs(i-2) + 106.d0 * rhs(i-3)
      &                   -  19.d0 * rhs(i-4) )
-     &              + 720.d0 * wz(i-1,1) ) / 720.d0
+     &            + 720.d0 * wz(i-1,1) ) / 720.d0
        end if
 
 !!!!!!!!! VER SE PRECISA DISTO MESMO
@@ -164,74 +167,75 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine poi_ux
 
-      ! calculate the new ux velocity using 
-      ! the continuity equation
+      ! calculate the new ux velocity using the continuity equation
       implicit none
       include '../par.for'
       include '../comm.par'
       include 'comm.var'
       include '../comm.coef'
+      include '../comm.fs'
       include 'mpif.h'
       integer status(MPI_status_size)
       integer i, j, i_ini
       real*8 var(jmax), xad, ue, aux(2), dvdx(ptsx,jmax),
-     &       duydy(ptsx,jmax), dvdxa, dya
+     &       duydy(ptsx,jmax), dvdxa, dya, m
 
 !!!! OTIMIZAR PARA CALCULAR SOMENTE NO PONTO I = 1
 c     call derparx(dvdx,uy)
 
-      if (my_rank.eq.0) then 
+      if (my_rank.eq.0) then
         do j = 1, jmax
-          dvdxa = (-1764.d0 * uy(1,j) + 4320.d0 * uy(2,j)
-     &             -5400.d0 * uy(3,j) + 4800.d0 * uy(4,j)
-     &             -2700.d0 * uy(5,j) + 864.d0 *  uy(6,j)
-     &             -120.d0  * uy(7,j) )/ (720.d0 * dx)
+          dvdxa = ( - 1764.d0 * uy(1,j) + 4320.d0 * uy(2,j)
+     &              - 5400.d0 * uy(3,j) + 4800.d0 * uy(4,j)
+     &              - 2700.d0 * uy(5,j) + 864.d0 *  uy(6,j)
+     &              -  120.d0 * uy(7,j) ) / (720.d0 * dx)
 c         var(j) = dvdx(1,j) + wz(1,j)
           var(j) = dvdxa + wz(1,j)
         end do
      
         dya = dy
-        ux(1,2) = ( dya * ( sp_integ_coef(3)*var(1) 
-     &                    + sp_integ_coef(4)*var(2) 
-     &                    + sp_integ_coef(5)*var(3)
-     &                    + sp_integ_coef(6)*var(4) 
-     &                    + sp_integ_coef(7)*var(5)  )
-     &                    + sp_integ_coef(1)*ux(1,1) )  
-     &                    / (-1.d0*sp_integ_coef(2))
+        ux(1,2) = ( dya * ( sp_integ_coef(3) * var(1)
+     &                    + sp_integ_coef(4) * var(2)
+     &                    + sp_integ_coef(5) * var(3)
+     &                    + sp_integ_coef(6) * var(4)
+     &                    + sp_integ_coef(7) * var(5)  )
+     &                    + sp_integ_coef(1) * ux(1,1) )
+     &            / ( - 1.d0 * sp_integ_coef(2) )
         do j = 3, jmax - 2
-           dya = dy * stf ** (j-3) 
-           ux(1,j) = ( dya * ( cp_integ_coef(4)*var(j-2) 
-     &                       + cp_integ_coef(5)*var(j-1)  
-     &                       + cp_integ_coef(6)*var(j)   
-     &                       + cp_integ_coef(7)*var(j+1)   
-     &                       + cp_integ_coef(8)*var(j+2) )  
-     &                       + cp_integ_coef(1)*ux(1,j-2)
-     &                       + cp_integ_coef(2)*ux(1,j-1) ) 
-     &                       / (-1.d0*cp_integ_coef(3))
+           dya = dy * stf**(j-3)
+           ux(1,j) = ( dya * ( cp_integ_coef(4) * var(j-2)
+     &                       + cp_integ_coef(5) * var(j-1)
+     &                       + cp_integ_coef(6) * var(j)
+     &                       + cp_integ_coef(7) * var(j+1)
+     &                       + cp_integ_coef(8) * var(j+2)  )
+     &                       + cp_integ_coef(1) * ux(1,j-2)
+     &                       + cp_integ_coef(2) * ux(1,j-1) )
+     &               / ( - 1.d0 * cp_integ_coef(3) )
         end do
-      
+ 
         j = jmax - 1
-        dya = dy * stf ** (j-3) 
-        ux(1,j) = (  dya * ( pp_integ_coef(4)*var(j-2) 
-     &                     + pp_integ_coef(5)*var(j-1)  
-     &                     + pp_integ_coef(6)*var(j)   
-     &                     + pp_integ_coef(7)*var(j+1))  
-     &                     + pp_integ_coef(1)*ux(1,j-2) 
-     &                     + pp_integ_coef(2)*ux(1,j-1) ) 
-     &                     / (-1.d0*pp_integ_coef(3))
-      
-        dya = dy * stf ** (jmax-5) 
-        ux(1,jmax) = (  dya * ( lp_integ_coef(3)*var(jmax)   
-     &                        + lp_integ_coef(4)*var(jmax-1) 
-     &                        + lp_integ_coef(5)*var(jmax-2) 
-     &                        + lp_integ_coef(6)*var(jmax-3)
-     &                        + lp_integ_coef(7)*var(jmax-4)) 
-     &                        + lp_integ_coef(2)*ux(1,jmax-1) ) 
-     &                        / (-1.d0*lp_integ_coef(1))
-      
+        dya = dy * stf**(j-3)
+        ux(1,j) = ( dya * ( pp_integ_coef(4) * var(j-2)
+     &                    + pp_integ_coef(5) * var(j-1)
+     &                    + pp_integ_coef(6) * var(j)
+     &                    + pp_integ_coef(7) * var(j+1)  )
+     &                    + pp_integ_coef(1) * ux(1,j-2)
+     &                    + pp_integ_coef(2) * ux(1,j-1) )
+     &            / ( - 1.d0 * pp_integ_coef(3) )
+
+        dya = dy * stf**(jmax-5)
+        ux(1,jmax) = ( dya * ( lp_integ_coef(3) * var(jmax)
+     &                       + lp_integ_coef(4) * var(jmax-1)
+     &                       + lp_integ_coef(5) * var(jmax-2)
+     &                       + lp_integ_coef(6) * var(jmax-3)
+     &                       + lp_integ_coef(7) * var(jmax-4)  )
+     &                       + lp_integ_coef(2) * ux(1,jmax-1) )
+     &               / ( - 1.d0 * lp_integ_coef(1) )
+ 
       end if
 
       call deryfv(duydy,uy)
@@ -240,7 +244,7 @@ c         var(j) = dvdx(1,j) + wz(1,j)
 
       do j = 2, jmax - 1
         if (my_rank.gt.0) then
-          call MPI_Recv(aux, 2, mpi_double_precision, my_rank - 1, 
+          call MPI_Recv(aux, 2, mpi_double_precision, my_rank - 1,
      &                  153, MPI_COMM_WORLD, status, ierr)
           ux(1,j) = aux(1)
           ux(2,j) = aux(2)
@@ -266,11 +270,11 @@ c         var(j) = dvdx(1,j) + wz(1,j)
         if (my_rank.lt.numproc) then
           aux(1) = ux(ptsx-inter,j)
           aux(2) = ux(ptsx-inter+1,j)
-          call MPI_Send(aux, 2, mpi_double_precision, my_rank + 1, 
+          call MPI_Send(aux, 2, mpi_double_precision, my_rank + 1,
      &                  153, MPI_COMM_WORLD, ierr)
          else
           i = ptsx - 1
-          ux(i,j) = ( - dx * ( 10.d0 * duydy(i-2,j) 
+          ux(i,j) = ( - dx * ( 10.d0 * duydy(i-2,j)
      &                       + 57.d0 * duydy(i-1,j)
      &                       + 24.d0 * duydy(i,j)
      &                       -         duydy(i+1,j) )
@@ -289,21 +293,24 @@ c         var(j) = dvdx(1,j) + wz(1,j)
 !!!!!!!!! VER SE PRECISA DISTO MESMO
       call boundary_exchange_1stmode(ux)
 
-      if (my_rank.eq.0) then 
+      if (my_rank.eq.0) then
         ue = ux(1,jmax)
       end if
-      call MPI_BCAST(ue, 1, mpi_double_precision, 0, mpi_comm_world, 
+      call MPI_BCAST(ue, 1, mpi_double_precision, 0, mpi_comm_world,
      &               ierr)
+!     m = beta_fs / (2.d0 - beta_fs)
       do i = 1, ptsx
-        xad = dble(i+shift-1)*dx + x0
+        xad        = dble(i+shift-1)*dx + x0
+        m          = beta_fs(i+shift-1) / (2.d0 - beta_fs(i+shift-1))
         ux(i,jmax) = ue * xad**m
-        duexmdx(i) = ue * m * xad**(m-1.d0)
+        duexmdx(i) = ue * m * xad**(m - 1.d0)
       end do
 
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine boundary_exchange_wwall(var)
 
       implicit none
@@ -334,7 +341,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine boundary_exchange_1stmode(var)
 
       implicit none
@@ -369,7 +377,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine filter_trid
 
       implicit none
@@ -396,7 +405,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine lhs_tridf(a,b,c)
 
       ! mount the LHS of the matrix for the second derivative
@@ -437,10 +447,12 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       return
       end
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine rhsf_trid(rhsz)
 
-      ! calculate the RHS for the wx filter 
+      ! calculate the RHS for the wx filter
       implicit none
       include '../par.for'
       include 'comm.var'
@@ -449,45 +461,45 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       do j = 1, jmax
         rhsz(1,j) = (   15.d0 * wz(1,j) +  4.d0 * wz(2,j)
-     &                  -  6.d0 * wz(3,j) +  4.d0 * wz(4,j)
-     &                  -         wz(5,j) ) / 16.d0
+     &                -  6.d0 * wz(3,j) +  4.d0 * wz(4,j)
+     &                -         wz(5,j) ) / 16.d0
         rhsz(2,j) = (           wz(1,j) + 12.d0 * wz(2,j)
-     &                  +  6.d0 * wz(3,j) -  4.d0 * wz(4,j)
-     &                  +         wz(5,j) ) / 16.d0
+     &                +  6.d0 * wz(3,j) -  4.d0 * wz(4,j)
+     &                +         wz(5,j) ) / 16.d0
         rhsz(3,j) = ( -         wz(1,j) +  4.d0 * wz(2,j)
-     &                  + 10.d0 * wz(3,j) +  4.d0 * wz(4,j)
-     &                  -         wz(5,j) ) / 16.d0
+     &                + 10.d0 * wz(3,j) +  4.d0 * wz(4,j)
+     &                -         wz(5,j) ) / 16.d0
 
         do i = 4, ptsx - 3
-          rhsz(i,j) = af *   wz(i,j) +
-     &                  bf * ( wz(i+1,j) + wz(i-1,j)) +
-     &                  cf * ( wz(i+2,j) + wz(i-2,j)) +
-     &                  df * ( wz(i+3,j) + wz(i-3,j))
+          rhsz(i,j) = af *   wz(i,j)
+     &              + bf * ( wz(i+1,j) + wz(i-1,j))
+     &              + cf * ( wz(i+2,j) + wz(i-2,j))
+     &              + df * ( wz(i+3,j) + wz(i-3,j))
         end do
 
         rhsz(ptsx-2,j) = ( -         wz(ptsx,j)
-     &                       +  4.d0 * wz(ptsx-1,j)
-     &                       + 10.d0 * wz(ptsx-2,j)
-     &                       +  4.d0 * wz(ptsx-3,j)
-     &                       -         wz(ptsx-4,j) ) / 16.d0 
+     &                     +  4.d0 * wz(ptsx-1,j)
+     &                     + 10.d0 * wz(ptsx-2,j)
+     &                     +  4.d0 * wz(ptsx-3,j)
+     &                     -         wz(ptsx-4,j) ) / 16.d0
         rhsz(ptsx-1,j) = (           wz(ptsx,j)
-     &                       + 12.d0 * wz(ptsx-1,j)
-     &                       +  6.d0 * wz(ptsx-2,j)
-     &                       -  4.d0 * wz(ptsx-3,j)
-     &                       +         wz(ptsx-4,j) ) / 16.d0 
+     &                     + 12.d0 * wz(ptsx-1,j)
+     &                     +  6.d0 * wz(ptsx-2,j)
+     &                     -  4.d0 * wz(ptsx-3,j)
+     &                     +         wz(ptsx-4,j) ) / 16.d0
         rhsz(ptsx,j)   = (   15.d0 * wz(ptsx,j)
-     &                       +  4.d0 * wz(ptsx-1,j)
-     &                       -  6.d0 * wz(ptsx-2,j)
-     &                       +  4.d0 * wz(ptsx-3,j)
-     &                       -         wz(ptsx-4,j) ) / 16.d0 
+     &                     +  4.d0 * wz(ptsx-1,j)
+     &                     -  6.d0 * wz(ptsx-2,j)
+     &                     +  4.d0 * wz(ptsx-3,j)
+     &                     -         wz(ptsx-4,j) ) / 16.d0
 
       end do
 
       return
       end
 
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c                                                       c
-c            end of loop calculations                   c
-c                                                       c
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c                                                                     c
+c                       end of loop calculations                      c
+c                                                                     c
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

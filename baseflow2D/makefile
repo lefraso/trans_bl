@@ -13,4 +13,4 @@ int : $(OBJ2)
 #	mpif77 -O0 -g -Wall -fbounds-check -c $<
 
 clean:
-	rm *~ *.o *bin *dat basef
+	rm *~ *.o *.bin *.dat basef

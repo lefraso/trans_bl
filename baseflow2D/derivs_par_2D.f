@@ -1,8 +1,9 @@
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c                                                       c
-c                 derivative calculations               c
-c                                                       c
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c                                                                     c
+c                        derivative calculations                      c
+c                                                                     c
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine derivs_k
 
       ! mounts the tri-diagonal LHS for derivative calculations
@@ -28,7 +29,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine derparx(ddx,fc)
 
       ! first derivatives calculation in x direction
@@ -46,7 +48,8 @@ c     call boundary_exchange_derivs(ddx)
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine derparxx(d2dx2,fc)
 
       ! second derivative calculations in x direction
@@ -64,7 +67,8 @@ c     call boundary_exchange_derivs(d2dx2)
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine dery(ddy,fc)
 
       ! first derivative calculation in y direction
@@ -80,7 +84,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine deryfv(ddy,fc)
 
       ! first derivative calculation in y direction for uy
@@ -96,7 +101,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine deryy(d2dy2,fc)
 
       ! second derivative calculation in y direction
@@ -112,7 +118,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine rhsx(fc,rhs)
       
       ! RHS for the first derivative calculation in x direction
@@ -122,18 +129,18 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       real*8 rhs(ptsx,jmax), fc(ptsx,jmax)
 
       do j = 1, jmax
-        rhs(1,j)=( - 74.d0 * fc(1,j) + 16.d0 * fc(2,j) +
-     &               72.d0 * fc(3,j) - 16.d0 * fc(4,j) +
-     &                2.d0 * fc(5,j) ) / ( 24.d0 * dx )
+        rhs(1,j)=( - 74.d0 * fc(1,j) + 16.d0 * fc(2,j)
+     &             + 72.d0 * fc(3,j) - 16.d0 * fc(4,j)
+     &             +  2.d0 * fc(5,j) ) / ( 24.d0 * dx )
         
-        rhs(2,j)=( - 406.d0 * fc(1,j) - 300.d0 * fc(2,j) +
-     &               760.d0 * fc(3,j) -  80.d0 * fc(4,j) +
-     &                30.d0 * fc(5,j) -   4.d0 * fc(6,j) ) /
+        rhs(2,j)=( - 406.d0 * fc(1,j) - 300.d0 * fc(2,j)
+     &             + 760.d0 * fc(3,j) -  80.d0 * fc(4,j)
+     &             +  30.d0 * fc(5,j) -   4.d0 * fc(6,j) ) /
      &             ( 120.d0 * dx )
         
         do i = 3, ptsx - 2
-          rhs(i,j)=(           fc(i+2,j) - fc(i-2,j) +
-     &               28.d0 * ( fc(i+1,j) - fc(i-1,j) ) ) /
+          rhs(i,j)=(           fc(i+2,j) - fc(i-2,j)
+     &             + 28.d0 * ( fc(i+1,j) - fc(i-1,j) ) ) /
      &             ( 12.d0 * dx )
         end do
         
@@ -156,7 +163,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine rhsxx(fc,rhs)
       
       ! RHS for the second derivative calculation in x direction
@@ -166,44 +174,45 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       real*8 rhs(ptsx,jmax), fc(ptsx,jmax)
 
       do j = 1, jmax
-        rhs(1,j)=(  9775.d0 * fc(1,j) - 20285.d0 * fc(2,j)
-     &           + 11170.d0 * fc(3,j) -   550.d0 * fc(4,j)
-     &           -   145.d0 * fc(5,j) +    35.d0 * fc(6,j) ) /
-     &           ( 60.d0 * dxx )
-        
-        rhs(2,j)=( 4834.d0 * fc(1,j) - 8424.d0 * fc(2,j)
-     &           + 1890.d0 * fc(3,j) + 2320.d0 * fc(4,j)
-     &           -  810.d0 * fc(5,j) +  216.d0 * fc(6,j)
-     &           -   26.d0 * fc(7,j) ) / ( 360.d0 * dxx )
-        
+        rhs(1,j) = (  9775.d0 * fc(1,j) - 20285.d0 * fc(2,j)
+     &             + 11170.d0 * fc(3,j) -   550.d0 * fc(4,j)
+     &             -   145.d0 * fc(5,j) +    35.d0 * fc(6,j) ) /
+     &             ( 60.d0 * dxx )
+
+        rhs(2,j) = ( 4834.d0 * fc(1,j) - 8424.d0 * fc(2,j)
+     &             + 1890.d0 * fc(3,j) + 2320.d0 * fc(4,j)
+     &             -  810.d0 * fc(5,j) +  216.d0 * fc(6,j)
+     &             -   26.d0 * fc(7,j) ) / ( 360.d0 * dxx )
+
         do i = 3, ptsx - 2
-          rhs(i,j)=(   3.d0 * ( fc(i+2,j) + fc(i-2,j) )
-     &             +  48.d0 * ( fc(i+1,j) + fc(i-1,j) )
-     &             - 102.d0 *   fc(i,j) ) / ( 4.d0 * dxx )
+          rhs(i,j) = (   3.d0 * ( fc(i+2,j) + fc(i-2,j) )
+     &               +  48.d0 * ( fc(i+1,j) + fc(i-1,j) )
+     &               - 102.d0 *   fc(i,j) ) / ( 4.d0 * dxx )
         end do
-        
-       rhs(ptsx-1,j)=(   4834.d0 * fc(ptsx,j)
-     &                 - 8424.d0 * fc(ptsx-1,j)
-     &                 + 1890.d0 * fc(ptsx-2,j)
-     &                 + 2320.d0 * fc(ptsx-3,j)
-     &                 -  810.d0 * fc(ptsx-4,j)
-     &                 +  216.d0 * fc(ptsx-5,j)
-     &                 -   26.d0 * fc(ptsx-6,j) ) /
-     &               ( 360.d0 * dxx )
-        
-        rhs(ptsx,j)=(    9775.d0 * fc(ptsx,j)
-     &                - 20285.d0 * fc(ptsx-1,j)
-     &                + 11170.d0 * fc(ptsx-2,j)
-     &                -   550.d0 * fc(ptsx-3,j)
-     &                -   145.d0 * fc(ptsx-4,j)
-     &                +    35.d0 * fc(ptsx-5,j) ) /
-     &              ( 60.d0 * dxx )
+
+       rhs(ptsx-1,j) = (   4834.d0 * fc(ptsx,j)
+     &                   - 8424.d0 * fc(ptsx-1,j)
+     &                   + 1890.d0 * fc(ptsx-2,j)
+     &                   + 2320.d0 * fc(ptsx-3,j)
+     &                   -  810.d0 * fc(ptsx-4,j)
+     &                   +  216.d0 * fc(ptsx-5,j)
+     &                   -   26.d0 * fc(ptsx-6,j) ) /
+     &                 ( 360.d0 * dxx )
+ 
+        rhs(ptsx,j) = (    9775.d0 * fc(ptsx,j)
+     &                  - 20285.d0 * fc(ptsx-1,j)
+     &                  + 11170.d0 * fc(ptsx-2,j)
+     &                  -   550.d0 * fc(ptsx-3,j)
+     &                  -   145.d0 * fc(ptsx-4,j)
+     &                  +    35.d0 * fc(ptsx-5,j) ) /
+     &                ( 60.d0 * dxx )
       end do
 
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine rhsy(fc,rhs)
 
       ! RHS for the first derivative calculation in y direction
@@ -216,48 +225,49 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       do i = 1, ptsx
         ay = dy
-        rhs(i,1) = (1.d0/ay) * ( fp_fd_coef(3) * fc(i,1) +
-     &                           fp_fd_coef(4) * fc(i,2) +
-     &                           fp_fd_coef(5) * fc(i,3) +
-     &                           fp_fd_coef(6) * fc(i,4) +
-     &                           fp_fd_coef(7) * fc(i,5) )
-        
-        rhs(i,2) = (1.d0/ay) * ( sp_fd_coef(4) * fc(i,1) + 
-     &                           sp_fd_coef(5) * fc(i,2) +
-     &                           sp_fd_coef(6) * fc(i,3) +  
-     &                           sp_fd_coef(7) * fc(i,4) +
-     &                           sp_fd_coef(8) * fc(i,5) +   
-     &                           sp_fd_coef(9) * fc(i,6) )
-        
+        rhs(i,1) = (1.d0/ay) * ( fp_fd_coef(3) * fc(i,1)
+     &                         + fp_fd_coef(4) * fc(i,2)
+     &                         + fp_fd_coef(5) * fc(i,3)
+     &                         + fp_fd_coef(6) * fc(i,4)
+     &                         + fp_fd_coef(7) * fc(i,5) )
+ 
+        rhs(i,2) = (1.d0/ay) * ( sp_fd_coef(4) * fc(i,1)
+     &                         + sp_fd_coef(5) * fc(i,2)
+     &                         + sp_fd_coef(6) * fc(i,3)
+     &                         + sp_fd_coef(7) * fc(i,4)
+     &                         + sp_fd_coef(8) * fc(i,5)
+     &                         + sp_fd_coef(9) * fc(i,6) )
+ 
        do j = 3, jmax - 2
          ay = dy * stf**(j-3)
-         rhs(i,j) = (1.d0/ay) * ( cp_fd_coef(4) * fc(i,j-2) +
-     &                            cp_fd_coef(5) * fc(i,j-1) +
-     &                            cp_fd_coef(6) * fc(i,j)   +
-     &                            cp_fd_coef(7) * fc(i,j+1) +
-     &                            cp_fd_coef(8) * fc(i,j+2) )
+         rhs(i,j) = (1.d0/ay) * ( cp_fd_coef(4) * fc(i,j-2)
+     &                          + cp_fd_coef(5) * fc(i,j-1)
+     &                          + cp_fd_coef(6) * fc(i,j)
+     &                          + cp_fd_coef(7) * fc(i,j+1)
+     &                          + cp_fd_coef(8) * fc(i,j+2) )
        end do
-       
+ 
        ay = dy * stf**(jmax-6)
-       rhs(i,jmax-1) = (1.d0/ay) * ( pp_fd_coef(4)*fc(i,jmax)   +
-     &                               pp_fd_coef(5)*fc(i,jmax-1) +
-     &                               pp_fd_coef(6)*fc(i,jmax-2) +
-     &                               pp_fd_coef(7)*fc(i,jmax-3) +
-     &                               pp_fd_coef(8)*fc(i,jmax-4) +
-     &                               pp_fd_coef(9)*fc(i,jmax-5) )
-       
+       rhs(i,jmax-1) = (1.d0/ay) * ( pp_fd_coef(4)*fc(i,jmax)
+     &                             + pp_fd_coef(5)*fc(i,jmax-1)
+     &                             + pp_fd_coef(6)*fc(i,jmax-2)
+     &                             + pp_fd_coef(7)*fc(i,jmax-3)
+     &                             + pp_fd_coef(8)*fc(i,jmax-4)
+     &                             + pp_fd_coef(9)*fc(i,jmax-5) )
+ 
        ay = dy * stf**(jmax-5)
-       rhs(i,jmax) = (1.d0/ay) * ( lp_fd_coef(3) * fc(i,jmax)   +
-     &                             lp_fd_coef(4) * fc(i,jmax-1) +
-     &                             lp_fd_coef(5) * fc(i,jmax-2) +
-     &                             lp_fd_coef(6) * fc(i,jmax-3) +
-     &                             lp_fd_coef(7) * fc(i,jmax-4) )
+       rhs(i,jmax) = (1.d0/ay) * ( lp_fd_coef(3) * fc(i,jmax)
+     &                           + lp_fd_coef(4) * fc(i,jmax-1)
+     &                           + lp_fd_coef(5) * fc(i,jmax-2)
+     &                           + lp_fd_coef(6) * fc(i,jmax-3)
+     &                           + lp_fd_coef(7) * fc(i,jmax-4) )
       end do
 
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ 
       subroutine rhsyfv(fc,rhs)
 
       ! RHS for the first derivative calculation in y direction
@@ -270,44 +280,45 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       do i = 1, ptsx
         rhs(i,1) = 0.d0
-        
+ 
         ay = dy
-        rhs(i,2) = (1.d0/ay) * ( sp_fd_coef(4) * fc(i,1) + 
-     &                           sp_fd_coef(5) * fc(i,2) +
-     &                           sp_fd_coef(6) * fc(i,3) +  
-     &                           sp_fd_coef(7) * fc(i,4) +
-     &                           sp_fd_coef(8) * fc(i,5) +   
-     &                           sp_fd_coef(9) * fc(i,6) )
-        
+        rhs(i,2) = (1.d0/ay) * ( sp_fd_coef(4) * fc(i,1)
+     &                         + sp_fd_coef(5) * fc(i,2)
+     &                         + sp_fd_coef(6) * fc(i,3)
+     &                         + sp_fd_coef(7) * fc(i,4)
+     &                         + sp_fd_coef(8) * fc(i,5)
+     &                         + sp_fd_coef(9) * fc(i,6) )
+ 
        do j = 3, jmax - 2
          ay = dy * stf**(j-3)
-         rhs(i,j) = (1.d0/ay) * ( cp_fd_coef(4) * fc(i,j-2) +
-     &                            cp_fd_coef(5) * fc(i,j-1) +
-     &                            cp_fd_coef(6) * fc(i,j)   +
-     &                            cp_fd_coef(7) * fc(i,j+1) +
-     &                            cp_fd_coef(8) * fc(i,j+2) )
+         rhs(i,j) = (1.d0/ay) * ( cp_fd_coef(4) * fc(i,j-2)
+     &                          + cp_fd_coef(5) * fc(i,j-1)
+     &                          + cp_fd_coef(6) * fc(i,j)
+     &                          + cp_fd_coef(7) * fc(i,j+1)
+     &                          + cp_fd_coef(8) * fc(i,j+2) )
        end do
-       
+ 
        ay = dy * stf**(jmax-6)
-       rhs(i,jmax-1) = (1.d0/ay) *( pp_fd_coef(4) * fc(i,jmax)   +
-     &                              pp_fd_coef(5) * fc(i,jmax-1) +
-     &                              pp_fd_coef(6) * fc(i,jmax-2) +
-     &                              pp_fd_coef(7) * fc(i,jmax-3) +
-     &                              pp_fd_coef(8) * fc(i,jmax-4) +
-     &                              pp_fd_coef(9) * fc(i,jmax-5) )
-       
+       rhs(i,jmax-1) = (1.d0/ay) * ( pp_fd_coef(4) * fc(i,jmax)
+     &                             + pp_fd_coef(5) * fc(i,jmax-1)
+     &                             + pp_fd_coef(6) * fc(i,jmax-2)
+     &                             + pp_fd_coef(7) * fc(i,jmax-3)
+     &                             + pp_fd_coef(8) * fc(i,jmax-4)
+     &                             + pp_fd_coef(9) * fc(i,jmax-5) )
+ 
        ay = dy * stf**(jmax-5)
-       rhs(i,jmax) = (1.d0/ay) *( lp_fd_coef(3) * fc(i,jmax)   +
-     &                            lp_fd_coef(4) * fc(i,jmax-1) +
-     &                            lp_fd_coef(5) * fc(i,jmax-2) +
-     &                            lp_fd_coef(6) * fc(i,jmax-3) +
-     &                            lp_fd_coef(7) * fc(i,jmax-4) )
+       rhs(i,jmax) = (1.d0/ay) * ( lp_fd_coef(3) * fc(i,jmax)
+     &                           + lp_fd_coef(4) * fc(i,jmax-1)
+     &                           + lp_fd_coef(5) * fc(i,jmax-2)
+     &                           + lp_fd_coef(6) * fc(i,jmax-3)
+     &                           + lp_fd_coef(7) * fc(i,jmax-4) )
       end do
 
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine rhsyy(fc,rhs)
 
       ! RHS for the second derivative calculation in y direction
@@ -322,60 +333,61 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
         ayy = dy**2
 
-        rhs(i,1) = ( fp_sd_coef(3) * fc(i,1) +
-     &               fp_sd_coef(4) * fc(i,2) +
-     &               fp_sd_coef(5) * fc(i,3) +
-     &               fp_sd_coef(6) * fc(i,4) +
-     &               fp_sd_coef(7) * fc(i,5) +
-     &               fp_sd_coef(8) * fc(i,6) ) /
+        rhs(i,1) = ( fp_sd_coef(3) * fc(i,1)
+     &             + fp_sd_coef(4) * fc(i,2)
+     &             + fp_sd_coef(5) * fc(i,3)
+     &             + fp_sd_coef(6) * fc(i,4)
+     &             + fp_sd_coef(7) * fc(i,5)
+     &             + fp_sd_coef(8) * fc(i,6) ) /
      &              ( ayy )
-        
+ 
 
-        rhs(i,2) = ( sp_sd_coef(4)  * fc(i,1) +
-     &               sp_sd_coef(5)  * fc(i,2) +
-     &               sp_sd_coef(6)  * fc(i,3) +
-     &               sp_sd_coef(7)  * fc(i,4) +
-     &               sp_sd_coef(8)  * fc(i,5) +
-     &               sp_sd_coef(9)  * fc(i,6) +
-     &               sp_sd_coef(10) * fc(i,7) ) /
+        rhs(i,2) = ( sp_sd_coef(4)  * fc(i,1)
+     &             + sp_sd_coef(5)  * fc(i,2)
+     &             + sp_sd_coef(6)  * fc(i,3)
+     &             + sp_sd_coef(7)  * fc(i,4)
+     &             + sp_sd_coef(8)  * fc(i,5)
+     &             + sp_sd_coef(9)  * fc(i,6)
+     &             + sp_sd_coef(10) * fc(i,7) ) /
      &             ( ayy )
-        
+
        do j = 3, jmax - 2
          ayy = (dy*stf**(j-3))**2
-         rhs(i,j) = ( cp_sd_coef(4) * fc(i,j-2) +
-     &                cp_sd_coef(5) * fc(i,j-1) +
-     &                cp_sd_coef(6) * fc(i,j)   +
-     &                cp_sd_coef(7) * fc(i,j+1) +
-     &                cp_sd_coef(8) * fc(i,j+2) ) / ( ayy )
+         rhs(i,j) = ( cp_sd_coef(4) * fc(i,j-2)
+     &              + cp_sd_coef(5) * fc(i,j-1)
+     &              + cp_sd_coef(6) * fc(i,j)
+     &              + cp_sd_coef(7) * fc(i,j+1)
+     &              + cp_sd_coef(8) * fc(i,j+2) ) / ( ayy )
        end do
-        
+ 
       ayy = (dy*stf**(jmax-7))**2
 
-      rhs(i,jmax-1) = ( pp_sd_coef(4)  * fc(i,jmax)   +
-     &                  pp_sd_coef(5)  * fc(i,jmax-1) +
-     &                  pp_sd_coef(6)  * fc(i,jmax-2) +
-     &                  pp_sd_coef(7)  * fc(i,jmax-3) +
-     &                  pp_sd_coef(8)  * fc(i,jmax-4) +
-     &                  pp_sd_coef(9)  * fc(i,jmax-5) +
-     &                  pp_sd_coef(10) * fc(i,jmax-6) ) /
+      rhs(i,jmax-1) = ( pp_sd_coef(4)  * fc(i,jmax)
+     &                + pp_sd_coef(5)  * fc(i,jmax-1)
+     &                + pp_sd_coef(6)  * fc(i,jmax-2)
+     &                + pp_sd_coef(7)  * fc(i,jmax-3)
+     &                + pp_sd_coef(8)  * fc(i,jmax-4)
+     &                + pp_sd_coef(9)  * fc(i,jmax-5)
+     &                + pp_sd_coef(10) * fc(i,jmax-6) ) /
      &                ( ayy )
-       
+ 
       ayy = (dy*stf**(jmax-6))**2
-       
-      rhs(i,jmax) = ( lp_sd_coef(3) * fc(i,jmax)   +
-     &                lp_sd_coef(4) * fc(i,jmax-1) +
-     &                lp_sd_coef(5) * fc(i,jmax-2) +
-     &                lp_sd_coef(6) * fc(i,jmax-3) +
-     &                lp_sd_coef(7) * fc(i,jmax-4) +
-     &                lp_sd_coef(8) * fc(i,jmax-5) ) / ( ayy )
+ 
+      rhs(i,jmax) = ( lp_sd_coef(3) * fc(i,jmax)
+     &              + lp_sd_coef(4) * fc(i,jmax-1)
+     &              + lp_sd_coef(5) * fc(i,jmax-2)
+     &              + lp_sd_coef(6) * fc(i,jmax-3)
+     &              + lp_sd_coef(7) * fc(i,jmax-4)
+     &              + lp_sd_coef(8) * fc(i,jmax-5) ) / ( ayy )
       end do
 
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine tridparx(a,b,c,rhs)
-      
+ 
       ! solves tridiagonal matrix for the derivatives in x direction
       ! domain decomposition in x direction -> parallel subroutine
       implicit none
@@ -387,7 +399,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       real*8 a(ptsx), b(ptsx), c(ptsx)
       real*8 aux(2*inter), rhs(ptsx,jmax)
       real*8 u(ptsx,jmax), gam(ptsx), bet
-      
+ 
       do j = 1, jmax
         if (my_rank.eq.0) then
           bet    = b(1)
@@ -407,14 +419,14 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         if (my_rank.eq.0) i_ini = 3
         i_fim = ptsx - 2
         if (my_rank.eq.numproc) i_fim = ptsx
-        
+ 
         bet = b(i_ini-1) - a(i_ini-1) * gam(i_ini-1)
         do i = i_ini, i_fim
           gam(i) = c(i-1) / bet
           bet    = b(i) - a(i) * gam(i)
           u(i,j) = ( rhs(i,j) - a(i) * u(i-1,j) ) / bet
         end do
-        
+ 
         if (my_rank.lt.numproc) then
           do i = 1, inter
             aux(i)       = u(ptsx-inter+i-1,j)
@@ -424,23 +436,23 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &                  57, MPI_COMM_WORLD, ierr)
         end if
       end do
-      
+
       do j = 1, jmax
         if (my_rank.lt.numproc) then
-          call MPI_Recv(aux, 2*inter, mpi_double_precision, my_rank+1, 
+          call MPI_Recv(aux, 2*inter, mpi_double_precision, my_rank+1,
      &                  67, MPI_COMM_WORLD, status, ierr)
           do i = 1, inter
             u(ptsx-inter+i,j) = aux(i)
             gam(ptsx-inter+i) = aux(i+inter)
           end do
         end if
-        
+ 
         i_fim = ptsx - inter
         if (my_rank.eq.numproc) i_fim = ptsx - 1
         do i = i_fim, 1, -1
           u(i,j) = u(i,j) - gam(i+1) * u(i+1,j)
         end do
-        
+
         if (my_rank.gt.0) then
           do i = 1, inter
             aux(i)       = u(i+1,j)
@@ -457,7 +469,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine tridy(a,b,c,rhs)
 
       ! solves tridiagonal matrix for the derivatives in y direction
@@ -486,7 +499,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine tridseqx(a,b,c,rhs)
 
       ! solves tridiagonal matrix for the derivatives in x direction
@@ -515,7 +529,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine coef(a,b,c)
 
       ! mount the LHS of the matrix for the first derivative
@@ -550,7 +565,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine coeffv(a,b,c)
 
       ! mount the LHS of the matrix for the first derivative of uy
@@ -585,7 +601,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine coeff(a,b,c)
 
       ! mount the LHS of the matrix for the second derivative
@@ -620,7 +637,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine coefx(a,b,c)
 
       ! mount the LHS of the matrix for the first derivative
@@ -654,7 +672,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine coeffx(a,b,c)
 
       ! mount the LHS of the matrix for the second derivative
@@ -687,7 +706,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       return
       end
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine boundary_exchange_derivs(var)
 
       ! exchange values of the boundaries
@@ -699,7 +719,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       integer i, j
       real*8 aux(meshdx*jmax), var(ptsx,jmax)
 
-      ! variable used to calculate the number of columns needed 
+      ! variable used to calculate the number of columns needed
       ! to go forward or backward (interm)
 
       if (my_rank.lt.numproc) then
@@ -709,22 +729,22 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
             aux(j+(i-1)*jmax) = var(i+ptsx-24-1,j)
           end do
         end do
-        call MPI_Send(aux, meshdx*jmax, mpi_double_precision, 
+        call MPI_Send(aux, meshdx*jmax, mpi_double_precision,
      &                my_rank+1, 10, MPI_COMM_WORLD, ierr)
         ! Receiving the new right boundary columns from node + 1
-        call MPI_Recv(aux, meshdx*jmax, mpi_double_precision, 
+        call MPI_Recv(aux, meshdx*jmax, mpi_double_precision,
      &                my_rank+1, 20, MPI_COMM_WORLD, status, ierr)
         do i = 1, meshdx
           do j = 1, jmax
             var(i+ptsx-meshdx,j) = aux(j+(i-1)*jmax)
           end do
         end do
-       
+ 
        end if
 
       if (my_rank.gt.0) then
         ! Receiving the new left boundary columns from node - 1
-        call MPI_Recv(aux, meshdx*jmax, mpi_double_precision, 
+        call MPI_Recv(aux, meshdx*jmax, mpi_double_precision,
      &                my_rank-1, 10, MPI_COMM_WORLD, status, ierr)
         do i = 1, meshdx
           do j = 1, jmax
@@ -737,15 +757,15 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
             aux(j+(i-1)*jmax) = var(i+24-meshdx+1,j)
           end do
         end do
-        call MPI_Send(aux, meshdx*jmax, mpi_double_precision, 
+        call MPI_Send(aux, meshdx*jmax, mpi_double_precision,
      &                my_rank-1, 20, MPI_COMM_WORLD, ierr)
       end if
 
       return
       end
 
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c                                                       c
-c            end of derivative calculations             c
-c                                                       c
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c                                                                     c
+c                    end of derivative calculations                   c
+c                                                                     c
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

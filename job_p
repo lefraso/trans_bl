@@ -22,6 +22,8 @@ cd pre_processing
 make clean
 make
 ./coef
+make beta
+./beta
 make fs
 
 cd ../baseflow2D

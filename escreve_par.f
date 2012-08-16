@@ -34,7 +34,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       character*20 nm
       integer i, j, k, t, fanal, var
       real*8 uxb(ptsx,jmax), uyb(ptsx,jmax), wzb(ptsx,jmax)
-      complex*16 uxp(ptsx, jmax,kfour)
+      complex*16 uxp(ptsx,jmax,kfour)
       common/blas/ uxb, uyb, wzb
 
       if (dble(t-tt)/dble(fanal).gt.(t-tt)/fanal) return
@@ -43,6 +43,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       write(nm,'(a,i0.2,a,i0.2)')'pert_',my_rank,'_',var
       write(*,*) ' The results are stored in the files pert_cc_XX' 
       select case(my_form)
+
        case(0)
         do j = 1, jmax
           do i = 1, ptsx
@@ -59,10 +60,12 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         open(1,file=nm,form='unformatted')
         write(1) uxp
         close (unit=1)
+
        case(1)
         open(1,file=nm,form='unformatted')
         write(1) ux
         close (unit=1)
+
       end select
 
       return

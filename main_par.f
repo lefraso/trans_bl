@@ -180,8 +180,8 @@ c       do t = t0, tt
           end do
           ! disturbance introductions
           if (my_rank.eq.0) then
-c           call ts2d_pert(t, 0.5d0)
-            call ts3d_pert(t, 0.5d0)
+            call ts2d_pert(t, 0.5d0)
+c           call ts3d_pert(t, 0.5d0)
           end if
           call loop(1d-5)
         
@@ -217,8 +217,8 @@ c           call ts2d_pert(t, 0.5d0)
           end do
           ! disturbance introductions
           if (my_rank.eq.0) then
-c           call ts2d_pert(t, 1.d0)
-            call ts3d_pert(t, 1.d0)
+            call ts2d_pert(t, 1.d0)
+c           call ts3d_pert(t, 1.d0)
           end if
           call loop(1d-5)
         
@@ -356,6 +356,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       include 'comm.coef'
       include 'comm.multi'
       include 'mpif.h'
+      include 'comm.fs'
       character c1
       character*2 c2
       character*11 nome
@@ -422,7 +423,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! reads the boundary layer profile
       open(1,file='basens.bin',form='unformatted')
-      read(1) stf_v, beta_fs_v
+      read(1) stf_v
       read(1) uxbt, uybt, wzbt
       close(unit=1)
       ! gives the values of the boundary layer 
@@ -438,13 +439,19 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         end do
       end do
 
+      ! reads beta_fs from a file
+      open(1,file='beta_fs.dist',form='formatted')
+      read(1,*) beta_fs
+      close(unit=1)
+
       do i = 1, ptsx
-        xad = dble(i+shift-1)*dx + x0
-        duexmdx(i) = uxbt(1,jmax) * m * xad**(m-1.d0)
+        xad        = dble(i+shift-1)*dx + x0
+        m          = beta_fs(i+shift-1) / (2.d0 - beta_fs(i+shift-1))
+        duexmdx(i) = dcmplx(uxbt(1,jmax),0.d0) * m * xad**(m - 1.d0)
       end do
 
       ! reads the derivative and Poisson coefficients
-      open(1,file='coefs.bin',form='unformatted')
+      open(1,file='pre_processing/coefs.bin',form='unformatted')
       read(1) stf_v
       read(1) fp_fd_coef
       read(1) sp_fd_coef
@@ -588,6 +595,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       include 'comm.coef'
       include 'comm.multi'
       include 'mpif.h'
+      include 'comm.fs'
       character*15 nome
       integer i, j, k, t0, igv
       real*8 dt2, dt6, a(imax,5), luf(imax,5), bdfc(2,imax), ep,
@@ -674,6 +682,17 @@ c     call derparxr(dvargdx,varg) ! this is used for variable curvature
           uyb(i,j)  = uybt(i+shift,j)
           wzb(i,j)  = wzbt(i+shift,j)
         end do
+      end do
+
+      ! reads beta_fs from a file
+      open(1,file='beta_fs.dist',form='formatted')
+      read(1,*) beta_fs
+      close(unit=1)
+
+      do i = 1, ptsx
+        xad        = dble(i+shift-1)*dx + x0
+        m          = beta_fs(i+shift-1) / (2.d0 - beta_fs(i+shift-1))
+        duexmdx(i) = uxbt(1,jmax) * m * xad**(m-1.d0)
       end do
 
       open(1,file='pre_processing/coefs.bin',form='unformatted')
@@ -857,11 +876,11 @@ c     call lterms_fi(a, b, c)
       call deryy(d2wzdy2, wz)
 
       ! immersed boundary method forcing terms and derivative calculations
-      call cvirt
-      call derparx(dfydx, fy)
-      call derparx(dfzdx, fz)
-      call dery(dfxdy, fx)
-      call dery(dfzdy, fz)
+!     call cvirt
+!     call derparx(dfydx, fy)
+!     call derparx(dfzdx, fz)
+!     call dery(dfxdy, fx)
+!     call dery(dfzdy, fz)
 
       do k = 1, kfour
         do j = 2, jmax
@@ -870,17 +889,17 @@ c     call lterms_fi(a, b, c)
             dvx(i,j,k) = - dady(i,j,k) + v_kb(k) * b(i,j,k)
      &                   + ( d2wxdx2(i,j,k) + d2wxdy2(i,j,k)
      &                   +  v_k2b2(k) * wx(i,j,k) ) / Re
-     &                   +  v_kb(k) * fy(i,j,k) - dfzdy(i,j,k)
+!    &                   +  v_kb(k) * fy(i,j,k) - dfzdy(i,j,k)
 
             dvy(i,j,k) = - v_kb(k) * c(i,j,k) + dadx(i,j,k)
      &                   + ( d2wydx2(i,j,k) + d2wydy2(i,j,k)
      &                   +  v_k2b2(k) * wy(i,j,k) ) / Re
-     &                   +  dfzdx(i,j,k) - v_kb(k) * fx(i,j,k)
+!    &                   +  dfzdx(i,j,k) - v_kb(k) * fx(i,j,k)
 
             dvz(i,j,k) = - dbdx(i,j,k) + dcdy(i,j,k)
      &                   + ( d2wzdx2(i,j,k) + d2wzdy2(i,j,k)
      &                   +  v_k2b2(k) * wz(i,j,k) ) / Re
-     &                   +  dfxdy(i,j,k)  -  dfydx(i,j,k)
+!    &                   +  dfxdy(i,j,k)  -  dfydx(i,j,k)
 
           end do
         end do
@@ -1152,8 +1171,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       call bzone
 c     if (erro.lt.1.d-5) call filter
-c     if (erro.lt.1.d-5) call filter_trid
-      call filter_trid
+      if (erro.lt.1.d-5) call filter_trid
+c     call filter_trid
       call outuy(dwzdx)
       call poi_uy(dwzdx, erro)
       call poi_ux(duydy)

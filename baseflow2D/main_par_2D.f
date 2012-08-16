@@ -1,9 +1,10 @@
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c                                                                c
-c                main subroutines                                c
-c                                                                c
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      program rugosidade_20120529
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c                                                                      c
+c                          main subroutines                            c
+c                                                                      c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+      program baseflow_16082012
 
       implicit none
       include '../par.for'
@@ -22,14 +23,14 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       ! Find out number of processes
       call MPI_Comm_size(MPI_COMM_WORLD, p, ierr)
 
-      ! p nodes in the environment. So the number of the last node is numproc -->  
+      ! p nodes in the environment. So the number of the last node is numproc -->
       numproc = p - 1
 
       ! calculates the intersection
       ! inter = 2**(number of meshes used in multigrid solver - 1) * (stencil-2)
       inter = 2**( msh - 1 ) * ( stencil - 2 )
 
-      ! calculate the i_shift from one computer to another wiht the domain
+      ! calculate the i_shift from one computer to another with the domain
       ! decomposition
       shift = my_rank * (ptsx - inter - 1)
 
@@ -57,6 +58,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine verifica(run)
 
       implicit none
@@ -66,42 +68,40 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       integer nodesx, chute1, chute2
       real*8 n_npr
 
-      ! calculates the value of points in the x direction of each node
-      nodesx = ( imax + (inter + 1) * numproc ) / (numproc+1)
-      n_npr  = dble( imax + (inter + 1) * numproc ) / dble(numproc+1)
+      ! calculates the value of points in the x direction for each node
+      nodesx = ( imax + (inter + 1) * numproc ) / (numproc + 1)
+      n_npr  = dble( imax + (inter + 1) * numproc ) / dble(numproc + 1)
 
       ! Stop the program if the number of total points is not exactly
-      ! divided by nodes and if the  number of points in the x
+      ! divided by nodes and if the number of points in the x
       ! direction can not be used in multigrid program and if the
       ! number of points in the y direction can not be used in
       ! multigrid program
 
       if (ptsx.ne.nodesx) then
         write(*,*) 'ALTERAR O VALOR DE PTSX NO ARQUIVO par.for PARA:'
-        write(*,*) nodesx 
+        write(*,*) nodesx
         run = .false.
       end if
 
       if ((nodesx.ne.n_npr).or.(mod(nodesx-1,2**(msh-1)).ne.0)) then
-        chute1 = ( (nodesx-1) / 2**(msh-1) ) * 2**(msh-1) + 1
-        chute2 = ( ( (nodesx-1) / 2**(msh-1) ) + 1 ) * 2**(msh-1) + 1
+        chute1 = (   (nodesx - 1) / 2**(msh - 1) )       * 2**(msh - 1)
+        chute2 = ( ( (nodesx - 1) / 2**(msh - 1) ) + 1 ) * 2**(msh - 1)
         write(*,*)' Number of points in the x direction can
      &              not be used in multigrid solver'
         write(*,*)' The number of points in the x direction
      &              should be:'
-        write(*,*)  (chute1 - 1) * (numproc+1) - numproc
-     &              * inter + 1,'   or'
-        write(*,*)  (chute2 - 1) * (numproc+1) - numproc
-     &              * inter + 1
+        write(*,*)  chute1 * (numproc + 1) - numproc * inter + 1,'   or'
+        write(*,*)  chute2 * (numproc + 1) - numproc * inter + 1
         run = .false.
       end if
 
       if (nodesx .lt. 2*inter) then
-        write(*,*) ' Number of points in the x dirextion can note be
+        write(*,*) ' Number of points in the x direction can not be
      &               used in multigrid solver'
         write(*,*) ' The number of points in the x direction should
      &               be:'
-        write(*,*) ((nodesx * 2) - 1) * (numproc+1) - numproc
+        write(*,*) ((nodesx * 2) - 1) * (numproc + 1) - numproc
      &             * inter + 2
         run = .false.
       end if
@@ -117,7 +117,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end if
 
       if (jmax.lt.2**msh) then
-        write(*,*) ' Number of points in the y direction can note be
+        write(*,*) ' Number of points in the y direction can not be
      & used in multigrid solver'
         write(*,*) ' The number of points in the y direction should
      & be:'
@@ -129,6 +129,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine solver
 
       implicit none
@@ -171,6 +172,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine init(dv1, wz1)
 
       ! initialize the program main variables
@@ -180,9 +182,10 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       include 'comm.var'
       include '../comm.coef'
       include '../comm.multi'
+      include '../comm.fs'
       include 'mpif.h'
       integer i, j
-      real*8 stf_verif, beta_fs_verif, dv1(ptsx,jmax), wz1(ptsx,jmax),
+      real*8 m, stf_verif, dv1(ptsx,jmax), wz1(ptsx,jmax),
      &       uxbt(imax,jmax), uybt(imax,jmax), wzbt(imax,jmax), xad,
      &       dwzdx(ptsx,jmax), ue, afil(ptsx), bfil(ptsx), cfil(ptsx)
       common/dwdx/ dwzdx
@@ -203,11 +206,10 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! reads the boundary layer profile
       open(1,file='../pre_processing/base_fs.bin',form='unformatted')
-      read(1) stf_verif, beta_fs_verif
+      read(1) stf_verif
       read(1) uxbt, uybt, wzbt
       close(unit=1)
-      ! gives the values of the boundary layer 
-      ! profile for each node
+      ! gives the values of the boundary layer profile for each node
       do j = 1, jmax
         do i = 1, ptsx
           ux(i,j) = uxbt(i+shift,j)
@@ -216,15 +218,22 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         end do
       end do
 
-      if (my_rank.eq.0) then 
+      ! reads beta_fs from a file
+      open(1,file='../beta_fs.dist',form='formatted')
+      read(1,*) beta_fs
+      close(unit=1)
+
+      if (my_rank.eq.0) then
         ue = ux(1,jmax)
       end if
-      call MPI_BCAST(ue, 1, mpi_double_precision, 0, mpi_comm_world, 
+      call MPI_BCAST(ue, 1, mpi_double_precision, 0, mpi_comm_world,
      &               ierr)
+!     m = beta_fs / (2.d0 - beta_fs)
       do i = 1, ptsx
         xad = dble(i+shift-1)*dx + x0
+        m   = beta_fs(i+shift-1) / (2.d0 - beta_fs(i+shift-1))
         ux(i,jmax) = ue * xad**m
-        duexmdx(i) = ue * m * xad**(m-1.d0)
+        duexmdx(i) = ue * m * xad**(m - 1.d0)
       end do
 
       ! reads the derivative and Poisson coefficients
@@ -253,10 +262,10 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       close(unit=1)
 
       ! verify if the files are compatible
-      if(stf_verif.ne.stf .or. beta_fs_verif.ne.beta_fs) then
+      if(stf_verif.ne.stf) then
        write(*,*)
-       write(*,*) 
-     &  'Error! Binary files are incompatible with stf/FS parameters.'
+       write(*,*)
+     &  'Error! Binary files are incompatible with stf parameter.'
        write(*,*)
        stop
       endif
@@ -270,6 +279,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine drv(dv)
 
       ! calculate the derivatives for RK method
@@ -277,9 +287,9 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       include '../par.for'
       include 'comm.var'
       integer i, j
-      real*8 d2wzdx2(ptsx,jmax),  d2wzdy2(ptsx,jmax),
-     &           uwz(ptsx,jmax),      vwz(ptsx,jmax),
-     &        duwzdx(ptsx,jmax),   dvwzdy(ptsx,jmax),
+      real*8 d2wzdx2(ptsx,jmax), d2wzdy2(ptsx,jmax),
+     &           uwz(ptsx,jmax),     vwz(ptsx,jmax),
+     &        duwzdx(ptsx,jmax),  dvwzdy(ptsx,jmax),
      &            dv(ptsx,jmax)
 
       do j = 1, jmax
@@ -305,6 +315,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine loop(erro)
 
       ! actualize the variables for each RK-step
@@ -322,12 +333,12 @@ c     if (erro.lt.1d-4) call filter_trid
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine create_ctes
 
       implicit none
       include '../par.for'
-      include '../comm.multi'   
- 
+      include '../comm.multi'
       integer i, j
  
       ! Multigrid spatial calculations
@@ -335,30 +346,30 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       ! dy0 at each multigrid level
       do i = 1 , msh
        if(stf.ne.1.d0) then
-        v_dy0(i) = dy * ( ( stf**(2**(i-1))-1.d0) / (stf-1.d0) ) 
+        v_dy0(i) = dy * ( ( stf**(2**(i-1)) - 1.d0) / (stf - 1.d0) )
        else
         v_dy0(i) = dy * 2.d0**(i-1)
-       endif 
+       endif
       enddo
       
       do i = 1 , msh
-       v_stf(i) = stf ** ( 2**(i-1) )
+       v_stf(i) = stf**( 2**(i-1) )
        v_dx2(i) = (dx * dble(2**(i-1)))**2
       enddo
        
       ! dy at each space
       do i = 1 , msh
        if (stf.ne.1.d0) then
-        do j = 1 , ( jmax - 1 ) / 2**(i-1)       
-         v_dy(j,i) = v_dy0(i) * v_stf(i)**(j-1) 
-         v_dy2(j,i) = v_dy(j,i) ** 2 
+        do j = 1 , ( jmax - 1 ) / 2**(i-1)
+         v_dy(j,i) = v_dy0(i) * v_stf(i)**(j-1)
+         v_dy2(j,i) = v_dy(j,i)**2
         enddo
        else
-        do j = 1 , ( jmax - 1 ) / 2**(i-1)       
-         v_dy(j,i) = v_dy0(i) 
-         v_dy2(j,i) = v_dy0(i) ** 2 
+        do j = 1 , ( jmax - 1 ) / 2**(i-1)
+         v_dy(j,i) = v_dy0(i)
+         v_dy2(j,i) = v_dy0(i)**2
         enddo
-       endif 
+       endif
       enddo
 
       v_ptsx(1) = ptsx
@@ -371,7 +382,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine escreve
 
       ! write the results in binary form
@@ -383,15 +395,15 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
  
       write(nm,'(a,i0.2,a)')'based_',my_rank,'.bin'
       open(1,file=nm,form='unformatted')
-      write(1) stf, beta_fs
+      write(1) stf
       write(1) ux, uy, wz
       close (unit=1)
 
       return
       end 
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c                                                                c
-c                end of main subroutines                         c
-c                                                                c
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c                                                                      c
+c                      end of main subroutines                         c
+c                                                                      c
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

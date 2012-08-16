@@ -429,11 +429,12 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       include 'comm.par'
       include 'comm.var'
       include 'comm.fourier'
+      include 'comm.fs'
       include 'mpif.h'
       integer status(MPI_status_size)
       integer i, j, k, i_ini
       real*8 a(imax,5), lu(imax,5), k2b2
-      complex*16 rhs(ptsx,jmax), aux(2),
+      complex*16 rhs(ptsx,jmax), aux(2), ue,
      &           duydy(ptsx,jmax,kfour), d2uydxdy(ptsx,jmax,kfour)
 
       call deryfv(duydy,uy)
@@ -491,6 +492,19 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end do
 
       call boundary_exchange_1stmode(ux)
+
+!     if (my_rank.eq.0) then
+!       ue = ux(1,jmax,1)
+!     end if
+!     call MPI_BCAST(ue, 1, mpi_complex16, 0, mpi_comm_world,
+!    &               ierr)
+!     m = beta_fs / (2.d0 - beta_fs)
+!     do i = 1, ptsx
+!       xad        = dble(i+shift-1)*dx + x0
+!       m          = beta_fs(i+shift-1) / (2.d0 - beta_fs(i+shift-1))
+!       ux(i,jmax) = ue * xad**m
+!       duexmdx(i) = ue * m * xad**(m - 1.d0)
+!     end do
 
       ! for other modes a ux_poisson equation is used
       call derparx(d2uydxdy, duydy)

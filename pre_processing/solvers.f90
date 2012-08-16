@@ -8,8 +8,9 @@ module solvers
  contains
 
 !------------------------------------------------------------------------------------
+!------------------------------------------------------------------------------------
 
- subroutine tridiagonal(a,b,c,r,n)
+ subroutine tridiagonal(a, b, c, r, n)
 
   implicit none
   integer, intent(in)            :: n
@@ -18,7 +19,7 @@ module solvers
  
   integer                        :: j
   real(kind=8)                   :: gam(n), u(n), bet
-  
+ 
   bet  = b(1)
   u(1) = r(1) / bet
   do j = 2, n
@@ -33,11 +34,13 @@ module solvers
   r = u ! Vector operation
  
   return 
+
  end subroutine tridiagonal
 
 !------------------------------------------------------------------------------------
+!------------------------------------------------------------------------------------
  
- subroutine tridiagonal_hp(a,b,c,r,n)
+ subroutine tridiagonal_hp(a, b, c, r, n)
 
   implicit none
   integer, intent(in)            :: n
@@ -46,7 +49,7 @@ module solvers
  
   integer                        :: j
   real(kind=10)                  :: gam(n), u(n), bet
-  
+ 
   bet  = b(1)
   u(1) = r(1) / bet
   do j = 2, n
@@ -61,11 +64,13 @@ module solvers
   r = u ! Vector operation
  
   return 
+
  end subroutine tridiagonal_hp
 
 !---------------------------------------------------------------------------------
+!---------------------------------------------------------------------------------
 
- subroutine ludecomp(a,b,x,n)
+ subroutine ludecomp(a, b, x, n)
 
   ! LU solver
  
@@ -74,10 +79,9 @@ module solvers
   real(kind=8), intent(in)      :: a(n,n)
   real(kind=8), intent(in)      :: b(n)
   real(kind=8), intent(out)     :: x(n)
-                                 
   real(kind=8)                  :: l(n,n),u(n,n),y(n),soma
   integer                       :: i,j,it,k
-  
+ 
   ! LU decomposition
   do it = 1, n
     i = it
@@ -122,12 +126,14 @@ module solvers
     if(dabs(x(i))<1d-14) x(i) = 0.d0
   end do
  
-  return
+   return
+
   end subroutine ludecomp
 
 !---------------------------------------------------------------------------------
+!---------------------------------------------------------------------------------
 
- subroutine ludecomp_hp(a,b,x,n)
+ subroutine ludecomp_hp(a, b, x, n)
 
   ! LU solver
  
@@ -136,10 +142,9 @@ module solvers
   real(kind=10), intent(in)     :: a(n,n)
   real(kind=10), intent(in)     :: b(n)
   real(kind=10), intent(out)    :: x(n)
-                                 
   real(kind=10)                 :: l(n,n),u(n,n),y(n),soma
   integer                       :: i,j,it,k
-  
+
   ! LU decomposition
   do it = 1, n
     i = it
@@ -184,22 +189,24 @@ module solvers
     if(abs(x(i))<1d-14) x(i) = 0.d0
   end do
  
-  return
+   return
+
   end subroutine ludecomp_hp
 
 !------------------------------------------------------------------------------------
+!------------------------------------------------------------------------------------
 
- subroutine bandy5(a,al,indx,n)
+ subroutine bandy5(a, al, indx, n)
 
   ! solve the LHS of one pentadiagonal matrix in y direction
-  ! the a and n variable are inputs and a, al and indx are output
-  
+  ! the a and n variables are inputs and a, al and indx are output
+ 
   implicit none
-  integer, intent(in)           :: n 
+  integer, intent(in)           :: n
   real(kind=8), intent(inout)   :: a(n,5)
-  real(kind=8), intent(out)     :: al(n,5) 
-  integer, intent(out)          :: indx(n) 
-                                 
+  real(kind=8), intent(out)     :: al(n,5)
+  integer, intent(out)          :: indx(n)
+ 
   integer                       :: m1, i, j, k, l, mm
   real(kind=8)                  :: d, dum
   real(kind=8), parameter       :: tiny=1.d-20
@@ -247,25 +254,27 @@ module solvers
        a(i,mm) = 0.d0
      end do
    end do
-  
- return
+ 
+  return
+
  end subroutine bandy5
 
 !------------------------------------------------------------------------------------
+!------------------------------------------------------------------------------------
 
- subroutine banbky5(a,al,indx,rhs,n)
+ subroutine banbky5(a, al, indx, rhs, n)
 
   ! solve the the pentadiagonal matrix in y direction
-  ! the term a and al comes from the subroutine bandy5
+  ! the terms a and al come from the subroutine bandy5
   ! the rhs variable is the input and at the end
   ! is the result of the solved problem
-  
+ 
   implicit none
   integer, intent(in)            :: n
   integer, intent(in)            :: indx(n)
   real(kind=8), intent(in)       :: a(n,5), al(n,5)
   real(kind=8), intent(inout)    :: rhs(n)
-  
+ 
   integer                        :: i, k, l
   real(kind=8)                   :: dum
  
@@ -292,12 +301,14 @@ module solvers
     if (l<5) l = l + 1
   end do
  
- return
+  return
+
  end subroutine banbky5
 
 !------------------------------------------------------------------------------------
+!------------------------------------------------------------------------------------
  
- subroutine alternative_ludecomp(a,lu,n)
+ subroutine alternative_ludecomp(a, lu, n)
 
   implicit none
   integer, intent(in)       :: n
@@ -339,13 +350,14 @@ module solvers
   i = n
   lu(i,3)   =   a(i,3) - lu(i,2)*lu(i-1,4) - lu(i,1)*lu(i-2,5) 
  
- return
+  return
 
  end subroutine alternative_ludecomp
 
 !------------------------------------------------------------------------------------
+!------------------------------------------------------------------------------------
 
- subroutine alternative_lusolver(lu,rhs,n)
+ subroutine alternative_lusolver(lu, rhs, n)
 
   implicit none
   integer, intent(in)         :: n
@@ -357,7 +369,7 @@ module solvers
 !  begin of solver Ly = rhs
    y(1) = rhs(1)
    y(2) = rhs(2) - lu(2,2) * y(1)
-   do j = 3 , n  
+   do j = 3 , n
     y(j) = rhs(j) - lu(j,1) * y(j-2) - lu(j,2) * y(j-1)
    end do
 !  end of solver Ly = rhs
@@ -371,7 +383,11 @@ module solvers
 !  end of solver U(rhs) = y
 
   return
+
  end subroutine alternative_lusolver
+
+!------------------------------------------------------------------------------------
+!------------------------------------------------------------------------------------
 
 end module solvers
 

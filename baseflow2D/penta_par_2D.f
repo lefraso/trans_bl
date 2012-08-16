@@ -1,8 +1,9 @@
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c                                                       c
-c         begin of pentadiagonal solvers                c
-c                                                       c
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c                                                                     c
+c                   begin of pentadiagonal solvers                    c
+c                                                                     c
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine bandy5(a,al,indx)
 
       ! solve the LHS of one pentadiagonal matrix in y direction
@@ -60,11 +61,12 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine banbky5(a,al,indx,rhs)
 
       ! solve the the pentadiagonal matrix in y direction
-      ! the term a and al comes from the subroutine bandy5
+      ! the terms a and al come from the subroutine bandy5
       ! the rhs variable is the input and at the end
       ! is the result of the solved problem
       implicit none
@@ -99,7 +101,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine band5_poi(a, n, al, indy)
 
       ! solve the LHS of the pentadiagonal matrix
@@ -158,7 +161,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine banbk5_poi(a, n, al, indy, rhs)
 
       ! solve the the pentadiagonal matrix the term a and al comes from
@@ -198,8 +202,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-c                                                       c
-c         end of pentadiagonal solvers                  c
-c                                                       c
-ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+c                                                                     c
+c                    end of pentadiagonal solvers                     c
+c                                                                     c
+ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

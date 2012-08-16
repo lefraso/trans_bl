@@ -124,7 +124,11 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       z = -1.d0 * dz
       do j = 1, jmax
-        y = dble(j-1) * dy
+        if(stf.eq.1.d0) then
+         y = dble(j-1) * dy
+        else
+         y = dy * (stf**(j-1)-1.d0)/(stf-1.d0)  
+        endif        
         do i = 1, imax, 2
           x = x0 + dble(i-1) * dx
           if (abs(Q(i,j,kphys)).lt.1e-15) Q(i,j,kphys) = 0.d0
@@ -135,7 +139,11 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       do k = 1, kphys
         z = dble(k-1) * dz
         do j = 1, jmax
-          y = dble(j-1) * dy
+          if(stf.eq.1.d0) then
+           y = dble(j-1) * dy
+          else
+           y = dy * (stf**(j-1)-1.d0)/(stf-1.d0)  
+          endif        
           do i = 1, imax, 2
             x = x0 + dble(i-1) * dx
             if (abs(Q(i,j,k)).lt.1e-15) Q(i,j,k) = 0.d0
