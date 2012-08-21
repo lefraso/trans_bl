@@ -1,11 +1,12 @@
       integer imax, ptsx, jmax, kfour, kphys, tt, i0, i1, i2, i3, i4,
-     &        stpp, start, stencil, meshpx, meshdx, msh,
-     &        tt_base, my_form, np
+     &        stpp, start, stencil, meshpx, meshdx, msh, tt_base, 
+     &        my_form, np
       real*8 Re, dx, dxx, dyy, dy, dt, x0, omega, alpha, beta, dt_base,
-     &       dyypdxx, dz, irf, stf, alphaf, af, bf, cf, df!, beta_fs, m
+     &       dyypdxx, dz, irf, stf, alphaf, af, bf, cf, df, Pr
       complex*16 im
 
 c     Immersed simulations my_form = 0, Gortler simulations my_form = 1
+c     Gortler simulations with heat transfer my_form = 2
       parameter ( my_form = 0 )
 
 c     start the program from t = 0 (start=0) or from a given time t (start=1)
@@ -25,8 +26,8 @@ c     value of beta (spanwise wavelength)
 c     initial and end point of disturbance strip
       parameter ( i0 = 20, i1 = 32, i2 = 48 )
 
-c     Reynolds number and initial x of the domain
-      parameter ( Re = 3.65d5, x0 = 1.d0 )
+c     Reynolds Number, Prandtl Number and initial x of the domain
+      parameter ( Re = 3.65d5, Pr = 1.d0, x0 = 1.d0 )
 
 c     number of points in y direction and delta y(dy/sqrt(re*x0))
       parameter ( jmax = 145, dy = 5.d-4, dyy = dy * dy )
@@ -34,24 +35,16 @@ c     number of points in y direction and delta y(dy/sqrt(re*x0))
       
 c     number of processing elements
       parameter ( np = 8 )
-c     parameter ( np = 1 )
 
 c     number of points in x direction and delta x
-c     parameter ( imax = 665, ptsx = 105, dx = 6.25d-3, dxx = dx * dx )
-c     parameter ( imax = 665, ptsx = 185, dx = 6.25d-3, dxx = dx * dx )
-c     parameter ( imax = 665, ptsx = 665, dx = 6.25d-3, dxx = dx * dx )
       parameter ( imax = 665, ptsx = (imax + (np - 1) * 25) / np )
       parameter ( dx = 6.25d-3, dxx = dx * dx )
 
 c     steps per period, number of time steps and time step(2*pi/omega/stpp)
       parameter ( stpp = 96, tt = 15 * stpp )
-c     parameter ( stpp = 64, tt = 30 * stpp )
-c     parameter ( stpp = 64, tt = 40 * stpp )
       parameter ( dt = 6.283185307179586d0 / omega / stpp )
 
 c     for baseflow use these parameters
-c     parameter ( stpp_base = 2500, tt_base = 100 * stpp_base )
-c     parameter ( dt_base = 6.283185307179586d0 / stpp_base )
       parameter ( dt_base = 0.1d0 * dx )
       parameter ( tt_base = 100 * imax )
 
@@ -63,7 +56,6 @@ c     parameter used in poisson subroutines
 
 c     initial and end point of damping zone
       parameter ( i3 = imax-80, i4 = imax-40 )
-c     parameter ( i3 = imax-50, i4 = imax-20 )
 
 c     number of modes in fourier and physical space
       parameter ( kfour = 2, kphys = 4 )

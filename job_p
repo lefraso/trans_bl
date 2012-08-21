@@ -18,6 +18,9 @@ cd josuelkr
 cp -r /home/josuelkr/gv/* .
 sleep 5
 
+rm pre_processing/constants.f90
+./convert.pl
+
 cd pre_processing
 make clean
 make

@@ -423,7 +423,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! reads the boundary layer profile
       open(1,file='basens.bin',form='unformatted')
-      read(1) stf_v
       read(1) uxbt, uybt, wzbt
       close(unit=1)
       ! gives the values of the boundary layer 
@@ -452,7 +451,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! reads the derivative and Poisson coefficients
       open(1,file='pre_processing/coefs.bin',form='unformatted')
-      read(1) stf_v
       read(1) fp_fd_coef
       read(1) sp_fd_coef
       read(1) cp_fd_coef
@@ -475,15 +473,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       read(1) ! integration in the y direction, used in baseflow2D 
       close(unit=1)
 
-      ! verify if the files are compatible
-      if(stf_v.ne.stf .or. beta_fs_v.ne.beta_fs) then
-       write(*,*)
-       write(*,*) 
-     &  'Error! Binary files are incompatible with stf/FS parameters.'
-       write(*,*)
-       stop
-      endif
-      
       open(1,file='coefs.dat',status='unknown')
       write(1,*) 'fp_fd'
       write(1,*) fp_fd_coef
@@ -671,7 +660,6 @@ c     call derparxr(dvargdx,varg) ! this is used for variable curvature
 
       ! reads the boundary layer profile
       open(1,file='baseflow2D/basens.bin',form='unformatted')
-      read(1) stf_v, beta_fs_v
       read(1) uxbt, uybt, wzbt
       close(unit=1)
       ! gives the values of the boundary layer 
@@ -696,7 +684,6 @@ c     call derparxr(dvargdx,varg) ! this is used for variable curvature
       end do
 
       open(1,file='pre_processing/coefs.bin',form='unformatted')
-      read(1) stf_v
       read(1) fp_fd_coef
       read(1) sp_fd_coef
       read(1) cp_fd_coef
@@ -719,15 +706,6 @@ c     call derparxr(dvargdx,varg) ! this is used for variable curvature
       read(1) ! integration in the y direction, used in baseflow2D 
       close(unit=1)
 
-      ! verify if the files are compatible
-      if(stf_v.ne.stf .or. beta_fs_v.ne.beta_fs) then
-       write(*,*)
-       write(*,*) 
-     &  'Error! Binary files are incompatible with stf/FS parameters.'
-       write(*,*)
-       stop
-      endif
-      
       open(1,file='coefs.dat',status='unknown')
       write(1,*) 'fp_fd'
       write(1,*) fp_fd_coef

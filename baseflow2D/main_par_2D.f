@@ -206,7 +206,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! reads the boundary layer profile
       open(1,file='../pre_processing/base_fs.bin',form='unformatted')
-      read(1) stf_verif
       read(1) uxbt, uybt, wzbt
       close(unit=1)
       ! gives the values of the boundary layer profile for each node
@@ -238,7 +237,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! reads the derivative and Poisson coefficients
       open(1,file='../pre_processing/coefs.bin',form='unformatted')
-      read(1) stf_verif
       read(1) fp_fd_coef
       read(1) sp_fd_coef
       read(1) cp_fd_coef
@@ -261,15 +259,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       read(1) lp_integ_coef
       close(unit=1)
 
-      ! verify if the files are compatible
-      if(stf_verif.ne.stf) then
-       write(*,*)
-       write(*,*)
-     &  'Error! Binary files are incompatible with stf parameter.'
-       write(*,*)
-       stop
-      endif
-      
       ! mounts the lhs for the derivative calculation
       call derivs_k
 

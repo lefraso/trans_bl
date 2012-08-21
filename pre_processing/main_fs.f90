@@ -1,9 +1,8 @@
  program fs
 
-  use constants
+! use constants
   use fs
-  include '../comm.fs'
-  real(kind = 8) :: fpp(imax), eta_end, eta_adp, delta, h
+  real(kind = 8) :: fpp(imax), thp(imax), eta_adp
   integer        :: i
 
   ! reads beta_fs from a file
@@ -11,26 +10,22 @@
   read(1,*) beta_fs
   close(unit=1)
 
-  i = 1
-  fpp(i) = etapp_guess
+  fpp(1)  = etapp_guess
   eta_adp = eta_zero
-  call general(fpp(i), eta_end, eta_adp, i)
+  call fpp_finder(fpp(1), eta_adp, 1)
   do i = 2, imax
    fpp(i)  = fpp(i-1)
-   eta_adp = eta_adp - 0.5d0
-   call general(fpp(i), eta_end, eta_adp, i)
+   eta_adp = eta_adp - 0.25d0
+   call fpp_finder(fpp(i), eta_adp, i)
+   call delta_calculation(fpp(i), eta_adp, i)
   enddo
  
-! do i = 1, imax
-!  call delta_calculation(fpp(i), eta_end, delta, i)
- 
-!  if(stf.eq.1.d0) then
-!   h = 4.d0 * delta / dble(jmax-1)
-!  else
-!   h = (4.d0 * delta) * (stf - 1.d0) / ( stf**(jmax-1) - 1.d0 )
-!  endif
-! enddo
+  if (my_form.eq.2) then
+    do i = 1, imax
+      call thetap_finder(thp(i), fpp(i), i)
+    enddo
+  endif
 
-  call baseflow_fs(fpp)
+  call baseflow_fs(fpp, thp)
 
  end program fs
