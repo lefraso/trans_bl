@@ -7,7 +7,7 @@
 
 c     Immersed simulations my_form = 0, Gortler simulations my_form = 1
 c     Gortler simulations with heat transfer my_form = 2
-      parameter ( my_form = 0 )
+      parameter ( my_form = 2 )
 
 c     start the program from t = 0 (start=0) or from a given time t (start=1)
       parameter ( start = 0 )
@@ -16,37 +16,36 @@ c     imaginary number
       parameter ( im = (0.d0,1.d0) )
 
 c     alpha (streamwise wavelength) and omega (frequency)
-      parameter ( alpha = 22.6d0, omega = 10.758878952d0 ) ! 250 Hz
-c     parameter ( alpha = 22.6d0, omega = 23.669533695d0 ) ! 550 Hz
-c     parameter ( alpha = 22.6d0, omega = 30.124861066d0 ) ! 700 Hz
+      parameter ( alpha = 0.45723605d0, omega = 16.3362818d0 ) ! 130 Hz
 
 c     value of beta (spanwise wavelength)
-      parameter ( beta = 12.566370616d0 )
+      parameter ( beta = 34.9065850399d0 )
 
 c     initial and end point of disturbance strip
-      parameter ( i0 = 20, i1 = 32, i2 = 48 )
+      parameter ( i0 = 30, i1 = 50, i2 = 80 )
 
 c     Reynolds Number, Prandtl Number and initial x of the domain
-      parameter ( Re = 3.65d5, Pr = 1.d0, x0 = 1.d0 )
+      parameter ( Re = 33124.d0, Pr = 0.72d0, x0 = 1.d0 )
 
 c     number of points in y direction and delta y(dy/sqrt(re*x0))
-      parameter ( jmax = 145, dy = 5.d-4, dyy = dy * dy )
-      parameter ( stf = 1.00d0 )
+      parameter ( jmax = 185, dy = 8.d-4, dyy = dy * dy )
+      parameter ( stf = 1.01d0 )
       
 c     number of processing elements
       parameter ( np = 8 )
 
 c     number of points in x direction and delta x
-      parameter ( imax = 665, ptsx = (imax + (np - 1) * 25) / np )
-      parameter ( dx = 6.25d-3, dxx = dx * dx )
+      parameter ( imax = 857, ptsx = (imax + (np - 1) * 25) / np )
+      parameter ( dx = 1.5d-2, dxx = dx * dx )
 
 c     steps per period, number of time steps and time step(2*pi/omega/stpp)
-      parameter ( stpp = 96, tt = 15 * stpp )
+      parameter ( stpp = 128, tt = 400 * stpp )
       parameter ( dt = 6.283185307179586d0 / omega / stpp )
 
 c     for baseflow use these parameters
       parameter ( dt_base = 0.1d0 * dx )
-      parameter ( tt_base = 100 * imax )
+c     parameter ( tt_base = 100 * imax )
+      parameter ( tt_base = 5000 )
 
 c     number of meshes used in the multigrid solver
       parameter ( msh = 4 )
@@ -55,10 +54,10 @@ c     parameter used in poisson subroutines
       parameter ( dyypdxx = dyy / dxx )
 
 c     initial and end point of damping zone
-      parameter ( i3 = imax-80, i4 = imax-40 )
+      parameter ( i3 = imax-110, i4 = imax-60 )
 
 c     number of modes in fourier and physical space
-      parameter ( kfour = 2, kphys = 4 )
+      parameter ( kfour = 11, kphys = 32 )
       parameter ( dz = 6.283185307179586d0 / (kphys * beta) )
 
 c     usados para solucao de poisson paralelizado

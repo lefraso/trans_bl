@@ -12,13 +12,16 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       real*8 x, y, z,
      &           uxp(imax,jmax,kphys), wxp(imax,jmax,kphys),
      &           uyp(imax,jmax,kphys), wyp(imax,jmax,kphys),
-     &           uzp(imax,jmax,kphys), wzp(imax,jmax,kphys)
+     &           uzp(imax,jmax,kphys), wzp(imax,jmax,kphys),
+     &           thp(imax,jmax,kphys)
       complex*16 uxt(imax,jmax,kfour), wxt(imax,jmax,kfour),
      &           uyt(imax,jmax,kfour), wyt(imax,jmax,kfour),
      &           uzt(imax,jmax,kfour), wzt(imax,jmax,kfour),
+     &           tht(imax,jmax,kfour), 
      &            ux(ptsx,jmax,kfour),  wx(ptsx,jmax,kfour),
      &            uy(ptsx,jmax,kfour),  wy(ptsx,jmax,kfour),
-     &            uz(ptsx,jmax,kfour),  wz(ptsx,jmax,kfour)
+     &            uz(ptsx,jmax,kfour),  wz(ptsx,jmax,kfour),
+     &            th(ptsx,jmax,kfour)
       real*8 uxbt(imax,jmax), uybt(imax,jmax), wzbt(imax,jmax)
 
 
@@ -28,7 +31,11 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         write(nome,'(a,i0.2,a)')'data_',my_rank,'.bin'
         open(2,file=nome,form='unformatted')
         read(2) t
-        read(2) ux,uy,uz,wx,wy,wz
+        if (my_form.eq.2) then
+          read(2) ux,uy,uz,wx,wy,wz,th
+         else
+          read(2) ux,uy,uz,wx,wy,wz
+        end if
         close (unit=2)
         shift = my_rank * (ptsx - inter - 1)
         do k = 1, kfour
@@ -40,15 +47,14 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
               wxt(i+shift,j,k) = wx(i,j,k)
               wyt(i+shift,j,k) = wy(i,j,k)
               wzt(i+shift,j,k) = wz(i,j,k)
+              tht(i+shift,j,k) = th(i,j,k)
             end do
           end do
         end do
       end do
 
-      select case (my_form)
-       case(0)
-        open(1,file='basens.bin',form='unformatted')
-        read(1)
+      if (my_form.eq.0) then
+        open(1,file='baseflow2D/basens.bin',form='unformatted')
         read(1) uxbt, uybt, wzbt
         close(unit=1)
         do j = 1, jmax
@@ -58,7 +64,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
             wzt(i,j,1) = wzt(i,j,1) - wzbt(i,j)
           end do
         end do
-      end select
+      end if
 
       call f_to_p(uxp,uxt)
       call f_to_p(uyp,uyt)
@@ -66,30 +72,16 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       call f_to_p(wxp,wxt)
       call f_to_p(wyp,wyt)
       call f_to_p(wzp,wzt)
+      call f_to_p(thp,tht)
 
-      ! writes data to spacial space to be open by tecplot
-      open (3, file = 'spatial.dat',status = 'unknown')
-      write(3,*) 'VARIABLES="x","y","z","velu","vely",
-     &"velz","vortx","vorty","vortz"'
-      write(3,*) 'ZONE I=',imax,', J=',jmax,', K=',kphys+1,', F=POINT'
-
-      z = -1.d0 * dz
-      do j = 1, jmax
-        if(stf.eq.1.d0) then
-         y = dble(j-1) * dy
-        else
-         y = dy * (stf**(j-1)-1.d0)/(stf-1.d0)  
-        endif        
-        do i = 1, imax
-          x = x0 + dble(i-1) * dx
-          write(3,5)x, y, z, uxp(i,j,kphys), uyp(i,j,kphys), 
-     &              uzp(i,j,kphys), wxp(i,j,kphys), wyp(i,j,kphys),
-     &              wzp(i,j,kphys)
-        end do
-      end do
-
-      do k = 1, kphys
-        z = dble(k-1) * dz
+      if (my_form.eq.2) then
+        ! writes data to spacial space to be open by tecplot
+        open (3, file = 'spatial.dat',status = 'unknown')
+        write(3,*) 'VARIABLES="x","y","z","velu","vely",
+     &  "velz","vortx","vorty","vortz","theta"'
+        write(3,*) 'ZONE I=',imax,', J=',jmax,', K=',kphys+1,', F=POINT'
+        
+        z = -1.d0 * dz
         do j = 1, jmax
           if(stf.eq.1.d0) then
            y = dble(j-1) * dy
@@ -98,14 +90,71 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           endif        
           do i = 1, imax
             x = x0 + dble(i-1) * dx
-          write(3,5)x, y, z, uxp(i,j,k), uyp(i,j,k), uzp(i,j,k),
-     &              wxp(i,j,k), wyp(i,j,k), wzp(i,j,k)
+            write(3,6)x, y, z, uxp(i,j,kphys), uyp(i,j,kphys), 
+     &                uzp(i,j,kphys), wxp(i,j,kphys), wyp(i,j,kphys),
+     &                wzp(i,j,kphys), thp(i,j,kphys)
           end do
         end do
-      end do
-      close (unit=3)
+        
+        do k = 1, kphys
+          z = dble(k-1) * dz
+          do j = 1, jmax
+            if(stf.eq.1.d0) then
+             y = dble(j-1) * dy
+            else
+             y = dy * (stf**(j-1)-1.d0)/(stf-1.d0)  
+            endif        
+            do i = 1, imax
+              x = x0 + dble(i-1) * dx
+            write(3,6)x, y, z, uxp(i,j,k), uyp(i,j,k), uzp(i,j,k),
+     &                wxp(i,j,k), wyp(i,j,k), wzp(i,j,k), thp(i,j,k)
+            end do
+          end do
+        end do
+        close (unit=3)
+
+      else
+        ! writes data to spacial space to be open by tecplot
+        open (3, file = 'spatial.dat',status = 'unknown')
+        write(3,*) 'VARIABLES="x","y","z","velu","vely",
+     &  "velz","vortx","vorty","vortz"'
+        write(3,*) 'ZONE I=',imax,', J=',jmax,', K=',kphys+1,', F=POINT'
+        
+        z = -1.d0 * dz
+        do j = 1, jmax
+          if(stf.eq.1.d0) then
+           y = dble(j-1) * dy
+          else
+           y = dy * (stf**(j-1)-1.d0)/(stf-1.d0)  
+          endif        
+          do i = 1, imax
+            x = x0 + dble(i-1) * dx
+            write(3,5)x, y, z, uxp(i,j,kphys), uyp(i,j,kphys), 
+     &                uzp(i,j,kphys), wxp(i,j,kphys), wyp(i,j,kphys),
+     &                wzp(i,j,kphys)
+          end do
+        end do
+        
+        do k = 1, kphys
+          z = dble(k-1) * dz
+          do j = 1, jmax
+            if(stf.eq.1.d0) then
+             y = dble(j-1) * dy
+            else
+             y = dy * (stf**(j-1)-1.d0)/(stf-1.d0)  
+            endif        
+            do i = 1, imax
+              x = x0 + dble(i-1) * dx
+            write(3,5)x, y, z, uxp(i,j,k), uyp(i,j,k), uzp(i,j,k),
+     &                wxp(i,j,k), wyp(i,j,k), wzp(i,j,k)
+            end do
+          end do
+        end do
+        close (unit=3)
+      end if
 
     5 format(1x,3d14.6,6d17.9)
+    6 format(1x,3d14.6,7d17.9)
 
       stop
       end

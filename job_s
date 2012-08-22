@@ -1,7 +1,7 @@
-#PBS -N cmp_stf_1_665
-#PBS -l nodes=n44:ppn=1:dodeca
-#PBS -o /cluster/josuelkr/teste_3D
-#PBS -e /cluster/josuelkr/teste_3D
+#PBS -N gv_beta_0
+#PBS -l nodes=1:ppn=8:dodeca
+#PBS -o /cluster/lefraso
+#PBS -e /cluster/lefraso
 
 echo "Nos reservados:"
 cat $PBS_NODEFILE
@@ -10,16 +10,43 @@ echo "Iniciando o daemon do MPD..."
 mpdboot -n 1 -f $PBS_NODEFILE
 sleep 5
 echo "Executando em cada no"
+
 cd /temp
-rm -r josuelkr/n665_2
-mkdir -p josuelkr/n665_2
-cd josuelkr/n665_2
-cp /home/josuelkr/cmp/stf/new/* .
+rm -r lefraso
+mkdir -p lefraso
+cd lefraso
+cp -r /home/lefraso/rugosidade/freq250_beta0_stf1/* .
 sleep 5
-make ru
-mpiexec -np 1 ./rugos >> saida
+
+rm pre_processing/constants.f90
+./convert.pl
+
+cd pre_processing
+make clean
+make
+./coef
+make beta
+./beta
+make fs
+
+cd ../baseflow2D
+make clean
+make 
+./basef >> saida_base
+
+gfortran format_base.f -o prg
+./prg 
+
+cd ..
+rm *.o
+make
+
+./prog >> saida
+
 sleep 5
 echo "Saindo do daemon do MPD..."
-mkdir /cluster/josuelkr/cmp/stf/new/resultados_new_s
-cp * /cluster/josuelkr/cmp/stf/new/resultados_new_s/.
+mpdallexit
+
+mkdir /home/lefraso/rugosidade/res_freq250_beta0_stf1
+cp -r * /home/lefraso/rugosidade/res_freq250_beta0_stf1/.
 echo "Sucesso!"

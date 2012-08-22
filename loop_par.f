@@ -697,22 +697,20 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       do k = 1, kfour
         bdt = 1
         if (k.eq.3) bdt = 2
-        do j = 2, jmax
-          do i = 1, ptsx
-            wx(i,1,k) = wx(i,1,k) * bdfc(bdt,i+shift)
-            wy(i,1,k) = wy(i,1,k) * bdfc(bdt,i+shift)
-            select case (my_form)
-             case(0)
-              if (k.eq.1) then 
-                wz(i,1,k) = ( wz(i,1,k) - wzb(i,j) ) * bdfc(bdt,i+shift)
-     &                    + wzb(i,j)
-               else
-                wz(i,1,k) = wz(i,1,k) * bdfc(bdt,i+shift)
-              end if
-             case(1)
-               wz(i,1,k) = wz(i,1,k) * bdfc(bdt,i+shift)
-            end select
-          end do
+        do i = 1, ptsx
+          wx(i,1,k) = wx(i,1,k) * bdfc(bdt,i+shift)
+          wy(i,1,k) = wy(i,1,k) * bdfc(bdt,i+shift)
+          select case (my_form)
+           case(0)
+            if (k.eq.1) then 
+              wz(i,1,k) = ( wz(i,1,k) - wzb(i,1) ) * bdfc(bdt,i+shift)
+     &                  + wzb(i,1)
+             else
+              wz(i,1,k) = wz(i,1,k) * bdfc(bdt,i+shift)
+            end if
+           case(1)
+             wz(i,1,k) = wz(i,1,k) * bdfc(bdt,i+shift)
+          end select
         end do
       end do
 

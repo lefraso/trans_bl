@@ -13,12 +13,21 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       character*15 nome
       integer t
 
-      write(nome,'(a,i0.2,a)')'data_',my_rank,'.bin'
-      write(*,*) ' The results are stored in the file data_xx.bin' 
-      open(1,file=nome,form='unformatted')
-      write(1) t
-      write(1) ux,uy,uz,wx,wy,wz
-      close (unit=1)
+      if (my_form.eq.2) then
+          write(nome,'(a,i0.2,a)')'data_',my_rank,'.bin'
+          write(*,*) ' The results are stored in the file data_xx.bin' 
+          open(1,file=nome,form='unformatted')
+          write(1) t
+          write(1) ux,uy,uz,wx,wy,wz,th
+          close (unit=1)
+        else
+          write(nome,'(a,i0.2,a)')'data_',my_rank,'.bin'
+          write(*,*) ' The results are stored in the file data_xx.bin' 
+          open(1,file=nome,form='unformatted')
+          write(1) t
+          write(1) ux,uy,uz,wx,wy,wz
+          close (unit=1)
+      end if
 
       return
       end 

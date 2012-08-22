@@ -126,8 +126,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       do i = 1, ptsx
         ! weight near the boundaries
         sc(i,1,1) = dcmplx(0.d0,0.d0)
-        sc(i,2,1) = sp_poi_coef(2,1)*(v_kb(k)*wx(i,2,k) - dwzdx(i,2,k))+
-     &              sp_poi_coef(3,1)*(v_kb(k)*wx(i,3,k) - dwzdx(i,3,k))
+        sc(i,2,1) = sp_poi_coef(2,1)*(v_kb(k)*wx(i,2,k)-dwzdx(i,2,k))+
+     &              sp_poi_coef(3,1)*(v_kb(k)*wx(i,3,k)-dwzdx(i,3,k))
         ! weight in the middle
         do j = 3, jmax - 2
           sc(i,j,1) = cp_poi_coef(1,1)*
@@ -141,15 +141,14 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         sc(i,jmax-1,1) = v_kb(k) * wx(i,jmax-1,k) - dwzdx(i,jmax-1,k)
         sc(i,jmax,1) = lp_poi_coef(1,1) * 
      &                 (v_kb(k) * wx(i,jmax,k) - dwzdx(i,jmax,k))
-        select case (my_form)
-         case(0)
+        if (my_form.eq.0) then
           if (k.eq.1) then
            dya = dy * stf**(jmax-3)
            sc(i,jmax,1) = - lp_poi_coef(1,1) * dwzdx(i,jmax,k)
-     &                  + lp_poi_coef(2,1)   * duexmdx(i) / dya
-     &                  - lp_poi_coef(2,1)   * alpha * uyb(i,jmax) / dya
+     &                 + lp_poi_coef(2,1)  * duexmdx(i) / dya
+     &                 - lp_poi_coef(2,1)  * alpha * uyb(i,jmax) / dya
           endif
-        end select
+        endif
       end do
 
       ! function of the Poisson equation

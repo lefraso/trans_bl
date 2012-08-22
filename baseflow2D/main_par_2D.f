@@ -138,35 +138,70 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       include 'comm.var'
       include 'mpif.h'
       integer i, j, t, t0, i_ini
-      real*8 dv1(ptsx,jmax), wz1(ptsx,jmax)
+      real*8 dv1(ptsx,jmax),  wz1(ptsx,jmax), 
+     &       dvt1(ptsx,jmax), th1(ptsx,jmax)
 
       i_ini = 1
       if (my_rank.eq.0) i_ini = 2
-      call init(dv1, wz1)
 
-      do t = 1, tt_base
-
-        call drv(dv1)
-        do j = 2, jmax
-          do i = i_ini, ptsx
-            wz1(i,j) = wz(i,j)
-            wz(i,j)  = wz1(i,j) + dv1(i,j) * dt_base
+      if (my_form.eq.2) then 
+        call init_theta(dv1, wz1, dvt1, th1)
+        do t = 1, tt_base
+  
+          call drv_theta(dv1, dvt1)
+          do j = 2, jmax
+            do i = i_ini, ptsx
+              wz1(i,j) = wz(i,j)
+              th1(i,j) = th(i,j)
+              wz(i,j)  = wz1(i,j) + dv1(i,j) * dt_base
+              th(i,j)  = th1(i,j) + dvt1(i,j) * dt_base
+            end do
           end do
-        end do
-        call loop(1d-4)
-
-        call drv(dv1)
-        do j = 2, jmax
-          do i = i_ini, ptsx
-            wz(i,j)  = wz1(i,j) + dv1(i,j) * dt_base
+          call loop(1d-4)
+  
+          call drv_theta(dv1, dvt1)
+          do j = 2, jmax
+            do i = i_ini, ptsx
+              wz(i,j)  = wz1(i,j) + dv1(i,j) * dt_base
+              th(i,j)  = th1(i,j) + dvt1(i,j) * dt_base
+            end do
           end do
+          call loop(1d-5)
+  
+          write(*,*)my_rank, t, ux(ptsx,jmax), uy(ptsx,jmax)
+          if (mod(t,500).eq.0) call escreve_theta
+  
         end do
-        call loop(1d-5)
+        call escreve_theta
+       else ! my_form = 0 and my_form = 1
 
-        write(*,*)my_rank, t, ux(ptsx,jmax), uy(ptsx,jmax)
-        if (mod(t,500).eq.0) call escreve
+        call init(dv1, wz1)
+        do t = 1, tt_base
+  
+          call drv(dv1)
+          do j = 2, jmax
+            do i = i_ini, ptsx
+              wz1(i,j) = wz(i,j)
+              wz(i,j)  = wz1(i,j) + dv1(i,j) * dt_base
+            end do
+          end do
+          call loop(1d-4)
+  
+          call drv(dv1)
+          do j = 2, jmax
+            do i = i_ini, ptsx
+              wz(i,j)  = wz1(i,j) + dv1(i,j) * dt_base
+            end do
+          end do
+          call loop(1d-5)
+  
+          write(*,*)my_rank, t, ux(ptsx,jmax), uy(ptsx,jmax)
+          if (mod(t,500).eq.0) call escreve
+  
+        end do
+        call escreve
+      end if
 
-      end do
 
       return
       end
@@ -269,6 +304,107 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
+      subroutine init_theta(dv1, wz1, dvt1, th1)
+
+      ! initialize the program main variables
+      implicit none
+      include '../par.for'
+      include '../comm.par'
+      include 'comm.var'
+      include '../comm.coef'
+      include '../comm.multi'
+      include '../comm.fs'
+      include 'mpif.h'
+      integer i, j
+      real*8 m, stf_verif, dv1(ptsx,jmax), wz1(ptsx,jmax),
+     &       dvt1(ptsx,jmax), th1(ptsx,jmax), thbt(imax,jmax),
+     &       uxbt(imax,jmax), uybt(imax,jmax), wzbt(imax,jmax), xad,
+     &       dwzdx(ptsx,jmax), ue, afil(ptsx), bfil(ptsx), cfil(ptsx)
+      common/dwdx/ dwzdx
+      common/filt/ afil, bfil, cfil
+
+      call lhs_tridf(afil,bfil,cfil)
+
+      ! all the variables are set to zero
+      do i = 1, ptsx
+        do j = 1, jmax
+          ux(i,j)   = 0.d0
+          uy(i,j)   = 0.d0
+          wz(i,j)   = 0.d0
+          th(i,j)   = 0.d0
+          wz1(i,j)  = 0.d0
+          dv1(i,j)  = 0.d0
+          dvt1(i,j) = 0.d0
+          th1(i,j)  = 0.d0
+        end do
+      end do
+
+      ! reads the boundary layer profile
+      open(1,file='../pre_processing/base_fs.bin',form='unformatted')
+      read(1) uxbt, uybt, wzbt, thbt
+      close(unit=1)
+      ! gives the values of the boundary layer profile for each node
+      do j = 1, jmax
+        do i = 1, ptsx
+          ux(i,j) = uxbt(i+shift,j)
+          uy(i,j) = uybt(i+shift,j)
+          wz(i,j) = wzbt(i+shift,j)
+          th(i,j) = thbt(i+shift,j)
+        end do
+      end do
+
+      ! reads beta_fs from a file
+      open(1,file='../beta_fs.dist',form='formatted')
+      read(1,*) beta_fs
+      close(unit=1)
+
+      if (my_rank.eq.0) then
+        ue = ux(1,jmax)
+      end if
+      call MPI_BCAST(ue, 1, mpi_double_precision, 0, mpi_comm_world,
+     &               ierr)
+!     m = beta_fs / (2.d0 - beta_fs)
+      do i = 1, ptsx
+        xad = dble(i+shift-1)*dx + x0
+        m   = beta_fs(i+shift-1) / (2.d0 - beta_fs(i+shift-1))
+        ux(i,jmax) = ue * xad**m
+        duexmdx(i) = ue * m * xad**(m - 1.d0)
+      end do
+
+      ! reads the derivative and Poisson coefficients
+      open(1,file='../pre_processing/coefs.bin',form='unformatted')
+      read(1) fp_fd_coef
+      read(1) sp_fd_coef
+      read(1) cp_fd_coef
+      read(1) pp_fd_coef
+      read(1) lp_fd_coef
+      read(1) fp_sd_coef
+      read(1) sp_sd_coef
+      read(1) cp_sd_coef
+      read(1) pp_sd_coef
+      read(1) lp_sd_coef
+      read(1) sp_poi_coef
+      read(1) cp_poi_coef
+      read(1) pp_poi_coef
+      read(1) lp_poi_coef
+      read(1) w_at_w_coef
+      read(1) dwydy_coef
+      read(1) sp_integ_coef
+      read(1) cp_integ_coef
+      read(1) pp_integ_coef
+      read(1) lp_integ_coef
+      close(unit=1)
+
+      ! mounts the lhs for the derivative calculation
+      call derivs_k
+
+      call create_ctes
+
+      return
+      end
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
       subroutine drv(dv)
 
       ! calculate the derivatives for RK method
@@ -297,6 +433,56 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         do i = 1, ptsx
           dv(i,j) = - duwzdx(i,j) - dvwzdy(i,j)
      &              + ( d2wzdx2(i,j) + d2wzdy2(i,j) ) / Re
+        end do
+      end do
+
+      return
+      end
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+      subroutine drv_theta(dv, dvt)
+
+      ! calculate the derivatives for RK method
+      implicit none
+      include '../par.for'
+      include 'comm.var'
+      integer i, j
+      real*8 d2wzdx2(ptsx,jmax), d2wzdy2(ptsx,jmax),
+     &           uwz(ptsx,jmax),     vwz(ptsx,jmax),
+     &        duwzdx(ptsx,jmax),  dvwzdy(ptsx,jmax),
+     &            dv(ptsx,jmax),     uth(ptsx,jmax),
+     &           vth(ptsx,jmax), d2thdx2(ptsx,jmax),
+     &       d2thdy2(ptsx,jmax),     dvt(ptsx,jmax),
+     &        duthdx(ptsx,jmax),  dvthdy(ptsx,jmax)
+
+      do j = 1, jmax
+        do i = 1, ptsx
+          uwz(i,j) = ux(i,j) * wz(i,j)
+          vwz(i,j) = uy(i,j) * wz(i,j)
+          uth(i,j) = ux(i,j) * th(i,j)
+          vth(i,j) = uy(i,j) * th(i,j)
+        end do
+      end do
+      call derparx(duwzdx,uwz)
+      call derparx(duthdx,uth)
+
+      call dery(dvwzdy, vwz)
+      call dery(dvthdy, vth)
+
+      call derparxx(d2wzdx2, wz)
+      call derparxx(d2thdx2, th)
+
+      call deryy(d2wzdy2, wz)
+      call deryy(d2thdy2, th)
+
+      do j = 2, jmax
+        do i = 1, ptsx
+          dv(i,j) = - duwzdx(i,j) - dvwzdy(i,j)
+     &              + ( d2wzdx2(i,j) + d2wzdy2(i,j) ) / Re
+
+          dvt(i,j) = - duthdx(i,j) - dvthdy(i,j)
+     &               + ( d2thdx2(i,j) + d2thdy2(i,j))/(Re*Pr)
         end do
       end do
 
@@ -384,8 +570,26 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
  
       write(nm,'(a,i0.2,a)')'based_',my_rank,'.bin'
       open(1,file=nm,form='unformatted')
-      write(1) stf
       write(1) ux, uy, wz
+      close (unit=1)
+
+      return
+      end 
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+
+      subroutine escreve_theta
+
+      ! write the results in binary form
+      implicit none
+      include '../par.for'
+      include '../comm.par'
+      include 'comm.var'
+      character*20 nm
+ 
+      write(nm,'(a,i0.2,a)')'based_',my_rank,'.bin'
+      open(1,file=nm,form='unformatted')
+      write(1) ux, uy, wz, th
       close (unit=1)
 
       return

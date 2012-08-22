@@ -1,7 +1,7 @@
 #PBS -N gv_beta_0
 #PBS -l nodes=1:ppn=8:dodeca
-#PBS -o /cluster/josuelkr
-#PBS -e /cluster/josuelkr
+#PBS -o /cluster/lefraso
+#PBS -e /cluster/lefraso
 
 echo "Nos reservados:"
 cat $PBS_NODEFILE
@@ -12,10 +12,10 @@ sleep 5
 echo "Executando em cada no"
 
 cd /temp
-rm -r josuelkr 
-mkdir -p josuelkr
-cd josuelkr
-cp -r /home/josuelkr/gv/* .
+rm -r lefraso
+mkdir -p lefraso
+cd lefraso
+cp -r /home/lefraso/rugosidade/freq250_beta0_stf1/* .
 sleep 5
 
 rm pre_processing/constants.f90
@@ -47,6 +47,6 @@ sleep 5
 echo "Saindo do daemon do MPD..."
 mpdallexit
 
-mkdir /cluster/josuelkr/result_gv_betafs_0
-cp -r * /cluster/josuelkr/result_gv_betafs_0/.
+mkdir /home/lefraso/rugosidade/res_freq250_beta0_stf1
+cp -r * /home/lefraso/rugosidade/res_freq250_beta0_stf1/.
 echo "Sucesso!"

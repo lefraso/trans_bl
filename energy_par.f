@@ -18,7 +18,7 @@
       
       do k = 1, kfour
        do i = 1, imax
-       fc1 = 0.d0
+        fc1 = 0.d0
         do j = 2, jmax - 1, 2
         det = y(j-1)**2 * ( y(j) - y(j+1) )                      
      &        + y(j-1) * ( y(j+1)**2 - y(j)**2)               
@@ -70,6 +70,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       complex*16  ux(ptsx,jmax,kfour),  wx(ptsx,jmax,kfour),
      &            uy(ptsx,jmax,kfour),  wy(ptsx,jmax,kfour),
      &            uz(ptsx,jmax,kfour),  wz(ptsx,jmax,kfour),
+     &            th(ptsx,jmax,kfour),
      &           uxt(imax,jmax,kfour), uyt(imax,jmax,kfour),
      &           uzt(imax,jmax,kfour)
 
@@ -79,7 +80,11 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         write(nome,'(a,i0.2,a)')'data_',my_rank,'.bin'
         open(2,file=nome,form='unformatted')
         read(2) t
-        read(2) ux,uy,uz,wx,wy,wz
+        if (my_form.eq.2) then
+          read(2) ux,uy,uz,wx,wy,wz,th
+         else
+          read(2) ux,uy,uz,wx,wy,wz
+        end if
         close (unit=2)
         shift = my_rank * (ptsx - inter - 1)
         do k = 1, kfour
@@ -92,7 +97,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           end do
         end do
       end do
-
+      
       do k = 1, kfour
         do j = 1, jmax
           do i = 1, imax
