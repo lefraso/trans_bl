@@ -31,7 +31,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
                else
                 wz(i,j,k) = wz(i,j,k) * bdfc(bdt,i+shift)
               end if
-             case(1)
+             case default
                wz(i,j,k) = wz(i,j,k) * bdfc(bdt,i+shift)
             end select
           end do
@@ -101,7 +101,7 @@ c               uy(ptsx,j,k) = rhs(j)
 c             uy(ptsx,j,k) = rhs(j)
               uy(ptsx,j,k) = dcmplx(0.d0,0.d0)
             end if
-           case(1)
+           case default
 c            uy(ptsx,j,k) = rhs(j)
              uy(ptsx,j,k) = dcmplx(0.d0,0.d0)
           end select
@@ -708,7 +708,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
              else
               wz(i,1,k) = wz(i,1,k) * bdfc(bdt,i+shift)
             end if
-           case(1)
+           case default
              wz(i,1,k) = wz(i,1,k) * bdfc(bdt,i+shift)
           end select
         end do
