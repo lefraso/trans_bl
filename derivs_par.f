@@ -21,9 +21,9 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       call coefx(a1x,b1x,c1x)
       call coeffx(a2x,b2x,c2x)
-      call coef(a1y,b1y,c1y)
-      call coeffv(a1fv,b1fv,c1fv)
-      call coeff(a2y,b2y,c2y)
+      call coefy(a1y,b1y,c1y)
+      call coefy_fv(a1fv,b1fv,c1fv)
+      call coeffy(a2y,b2y,c2y)
 
       return
       end
@@ -518,7 +518,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      subroutine coef(a,b,c)
+      subroutine coefy(a,b,c)
 
       ! mount the LHS of the matrix for the first derivative
       implicit none
@@ -553,7 +553,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      subroutine coeffv(a,b,c)
+      subroutine coefy_fv(a,b,c)
 
       ! mount the LHS of the matrix for the first derivative of uy
       implicit none
@@ -588,7 +588,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      subroutine coeff(a,b,c)
+      subroutine coeffy(a,b,c)
 
       ! mount the LHS of the matrix for the second derivative
       implicit none

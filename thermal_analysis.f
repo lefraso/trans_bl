@@ -188,6 +188,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       read(1) ! integration in the y direction, used in baseflow2D 
       close(unit=1)
 
+      call derivs_k
+
       call create_ctes
 
       return
@@ -238,13 +240,13 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       real*8 a1y(jmax), b1y(jmax), c1y(jmax)
       common/der1y/ a1y,b1y,c1y
 
-      call coef(a1y,b1y,c1y)
+      call coefy(a1y,b1y,c1y)
 
       return
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      subroutine coef(a,b,c)
+      subroutine coefy(a,b,c)
 
       ! mount the LHS of the matrix for the first derivative
       implicit none
