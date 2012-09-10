@@ -1631,59 +1631,72 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       return
       end
+
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       subroutine create_ctes
-       implicit none
-       include 'par.for'
-       include 'comm.multi'   
-       include 'comm.fourier'   
- 
-       integer i, j, k 
- 
-       ! Multigrid spatial calculations
- 
-       ! dy0 at each multigrid level
-       do i = 1 , msh
-        if(stf.ne.1.d0) then
-         v_dy0(i) = dy * ( ( stf**(2**(i-1))-1.d0) / (stf-1.d0) ) 
-        else
-         v_dy0(i) = dy * 2.d0**(i-1)
-        endif 
-       enddo
-       
-       do i = 1 , msh
-        v_stf(i) = stf ** ( 2**(i-1) )
-        v_dx2(i) = (dx * dble(2**(i-1)))**2
-       enddo
-        
-       ! dy at each space
-       do i = 1 , msh
-        if (stf.ne.1.d0) then
-         do j = 1 , ( jmax - 1 ) / 2**(i-1)       
-          v_dy(j,i) = v_dy0(i) * v_stf(i)**(j-1) 
-          v_dy2(j,i) = v_dy(j,i) ** 2 
-         enddo
-        else
-         do j = 1 , ( jmax - 1 ) / 2**(i-1)       
-          v_dy(j,i) = v_dy0(i) 
-          v_dy2(j,i) = v_dy0(i) ** 2 
-         enddo
-        endif 
-       enddo
 
-       v_ptsx(1) = ptsx
-       v_ptsy(1) = jmax
-       do i = 2 , msh
-        v_ptsx(i) = (v_ptsx(i-1) + 1) / 2
-        v_ptsy(i) = (v_ptsy(i-1) + 1) / 2
-       enddo
+      implicit none
+      include 'par.for'
+      include 'comm.multi'   
+      include 'comm.fourier'   
+ 
+      integer lvl, j, k 
+      real*8 aux
+ 
+      ! Multigrid spatial calculations
+ 
+      ! dy0 at each multigrid level
+      do lvl = 1 , msh
+       if(stf.ne.1.d0) then
+        v_dy0(lvl) = dy * ( ( stf**(2**(lvl-1))-1.d0) / (stf-1.d0) )
+       else
+        v_dy0(lvl) = dy * 2.d0**(lvl-1)
+       endif 
+      enddo
 
-       do k = 1 , kfour
-        v_k2b2(k) = - dble(k-1) * dble(k-1) * beta * beta
-        v_kb(k)   = - im * dble(k-1) * beta
-       enddo
+      do lvl = 1 , msh
+       v_stf(lvl) = stf ** ( 2**(lvl-1) )
+       v_dx2(lvl) = (dx * dble(2**(lvl-1)))**2
+      enddo
 
-       return
+      ! dy at each space
+       if (stf.ne.1.d0) then
+        do j = 1 , jmax - 1
+         v_qdy(j)  = 1.d0 / (v_dy0(1) * v_stf(1)**(j-1))
+        enddo
+       else
+        do j = 1 , jmax - 1
+         v_qdy(j)  = 1.d0 / (v_dy0(1))
+        enddo
+      endif
+
+      do lvl = 1 , msh
+       if (stf.ne.1.d0) then
+        do j = 1 , ( jmax - 1 ) / 2**(lvl-1)
+         aux           = (v_dy0(lvl) * v_stf(lvl)**(j-1))
+         v_qdy2(j,lvl) = 1.d0 / (aux**2)
+        enddo
+       else
+        do j = 1 , ( jmax - 1 ) / 2**(lvl-1)
+         aux           = (v_dy0(lvl))
+         v_qdy2(j,lvl) = 1.d0 / (aux**2)
+        enddo
+       endif
+      enddo
+
+      v_ptsx(1) = ptsx
+      v_ptsy(1) = jmax
+      do lvl = 2 , msh
+       v_ptsx(lvl) = (v_ptsx(lvl-1) + 1) / 2
+       v_ptsy(lvl) = (v_ptsy(lvl-1) + 1) / 2
+      enddo
+
+      do k = 1 , kfour
+       v_k2b2(k) = - dble(k-1) * dble(k-1) * beta * beta
+       v_kb(k)   = - im * dble(k-1) * beta
+      enddo
+
+      return
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc

@@ -44,8 +44,8 @@ c     steps per period, number of time steps and time step(2*pi/omega/stpp)
 
 c     for baseflow use these parameters
       parameter ( dt_base = 0.1d0 * dx )
-c     parameter ( tt_base = 100 * imax )
-      parameter ( tt_base = 5000 )
+      parameter ( tt_base = 100 * imax )
+c     parameter ( tt_base = 5000 )
 
 c     number of meshes used in the multigrid solver
       parameter ( msh = 4 )

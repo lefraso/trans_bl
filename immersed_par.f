@@ -9,21 +9,24 @@ c calculate the delta for the immerser boundary layer
       implicit none
       include 'par.for'
       include 'comm.par'
-      integer i, j, k, ist,iex,pontox,pontoy
-      real*8 yy,ys,xx,xs,xe,ye,sigx,sigy,x,y, z, h, yex, posy
-      real*8 pi,dist,beta1,distx,a,hipot,gama
+      integer i, j, k
+      real*8 ys, xs, sigx, sigy, x, y, z, yex, posy
+      real*8 pi, dist, beta1, distx, a, gama, x_ini, x_end
       real*8 d(imax,jmax,kphys), delta_no(ptsx,jmax,kphys)
       common/del/ delta_no
 
       pi     = 4.d0*datan(1.d0)
-      beta1  = 130.d0 ! inclinação da falesia
-      beta1  = pi*beta1/(180.d0)
-      sigx   = 1.d0 ! influencia o número de pontos da gaussiana em x
-      sigy   = 1.d0 ! influencia o número de pontos da gaussiana em y
 
-      ist    = 160 ! ponto i onde começa a falesia em x
-      iex    = 460 ! ponto i onde termina a falesia em x
-      yex    = 2d-2 ! ponto y onde termina a falesia em y
+      beta1  = 90.d0              ! inclinação da falesia
+      beta1  = pi*beta1/180.d0    ! passa para radianos
+      gama   = beta1 - 0.5d0 * pi ! angulo complentar
+
+      sigx   = 1.d0*dy ! influencia o número de pontos da gaussiana em x
+      sigy   = 1.d0*dy ! influencia o número de pontos da gaussiana em y
+
+      x_ini  = 1.2d0          ! ponto x onde começa a falesia
+      x_end  = 2.15d0         ! ponto x onde termina a falesia
+      yex    = 7.73222d-2     ! altura da falesia em y
 
 !     zerando o valor inicial de delta
       do k = 1, kphys
@@ -36,32 +39,31 @@ c calculate the delta for the immerser boundary layer
 
 !     loop para dar valores para delta diferentes de zero
       do k = 1, kphys ! loop em z
-        pontoy = 1
         posy = 0.d0
         do j = 1, jmax ! loop em y
-          y      = dble(j-1) * dy ! posição atual em y !!! VER FORMULA DO Y COM JOSUEL
-          pontox = ist
+          if(stf.eq.1.d0) then ! posição atual em y
+            y = dble(j-1) * dy
+           else
+            y = dy * (stf**(j-1)-1.d0)/(stf-1.d0)  
+          endif        
           do i = 1, imax ! loop em x
-            x = dble(i-1) * dx ! posição atual em x
-            gama  = beta1 - 0.5d0 * pi
-            distx = dble(ist-i) * dx
-            a     = (yex-y) * dtan(gama)
-            dist    = ( distx - a )/dcos(gama) ! mede a distância do ponto atual à fronteira imersa (<1 dentro da fronteira)
-            if (dist.gt.0.and.y.lt.dist*dsin(gama)+yex) then
+            x = dble(i-1) * dx + x0 ! posição atual em x
+            distx = x_ini - x
+            a     = ( yex - y ) * dtan(gama)
+            dist  = ( distx - a ) * dcos(gama) ! mede a distância do ponto atual à fronteira imersa (<1 dentro da fronteira)
+            if (dist.ge.0.and.y.le.dist*dsin(gama)+yex) then
               xs = dist * dcos(gama) ! distancia x do ponto (i,j) a reta
               ys = dist * dsin(gama) ! distancia y do ponto (i,j) a reta
              else 
-              xs = x - (pontox-1)*dx
-c             ys = y - (pontoy-1)*dy
               ys = y - posy
-              if (i.gt.pontox.and.pontox.lt.iex) pontox = pontox+1
-c             if (j.gt.pontoy.and.pontoy.lt.jex) pontoy = pontoy+1
-              if (y.gt.posy.and.posy.lt.yex) posy = dble(j-1)*dy
+              if (posy.le.yex) posy = y
+              xs = 0.d0
+              if (x.lt.x_ini) xs = x - x_ini
+              if (x.ge.x_end) xs = x - x_end
             end if
-            d(i,j,k) = dexp( -( xs/sigx/dx )**2 
-     &                     -( ys/sigy/dy )**2 )/(sigx*sigy) ! calculo do delta
-c           if (dist.lt.0.d0.and.i.lt.iex.and.j.lt.jex)  d(i,j,k) = 1.d0
-            if (dist.lt.0.d0.and.i.lt.iex.and.y.lt.yex)  d(i,j,k) = 1.d0
+            d(i,j,k) = dexp( -(xs**2/(2.d0*sigx**2))
+     &                       -(ys**2/(2.d0*sigy**2)) ) ! calculo do delta
+            if (dist.le.0.d0.and.x.le.x_end.and.y.le.yex) d(i,j,k)=1.d0
             if (d(i,j,k).lt.1d-14) d(i,j,k) = 0.d0 ! para garantir que é zero depois de alguns pontos
           end do
         end do
@@ -82,7 +84,11 @@ c           if (dist.lt.0.d0.and.i.lt.iex.and.j.lt.jex)  d(i,j,k) = 1.d0
       write(1,*) 'ZONE I=',imax,', J=',jmax,', K=',kphys+1,', F=POINT'
       z = -1.d0 * dz
       do j = 1, jmax
-        y = dble(j-1) * dy
+        if(stf.eq.1.d0) then
+         y = dble(j-1) * dy
+        else
+         y = dy * (stf**(j-1)-1.d0)/(stf-1.d0)
+        endif
         do i = 1, imax
           x = x0 + dble(i-1) * dx
           write(1,5)x,y,z,d(i,j,kphys)
@@ -91,7 +97,11 @@ c           if (dist.lt.0.d0.and.i.lt.iex.and.j.lt.jex)  d(i,j,k) = 1.d0
       do k = 1, kphys
         z = dble(k-1) * dz
         do j = 1, jmax
-          y = dble(j-1) * dy
+          if(stf.eq.1.d0) then
+           y = dble(j-1) * dy
+          else
+           y = dy * (stf**(j-1)-1.d0)/(stf-1.d0)
+          endif
           do i = 1, imax
             x = x0 + dble(i-1) * dx
             write(1,5)x,y,z,d(i,j,k)
@@ -100,7 +110,7 @@ c           if (dist.lt.0.d0.and.i.lt.iex.and.j.lt.jex)  d(i,j,k) = 1.d0
       end do
       close (unit=1)
     5 format(1x,4d17.9)
-      stop
+c     stop
 
       return
       end

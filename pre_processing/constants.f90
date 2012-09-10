@@ -6,15 +6,15 @@
   implicit none
 
   ! General constants
-  integer, parameter      :: my_form       = 0
-  integer, parameter      :: imax          = 665
-  real(kind=8), parameter :: dx            = 6.25d-3
-  integer, parameter      :: jmax          = 145
-  real(kind=8), parameter :: dy0           = 5.d-4
-  real(kind=8), parameter :: stf           = 1.00d0
+  integer, parameter      :: my_form       = 2
+  integer, parameter      :: imax          = 857
+  real(kind=8), parameter :: dx            = 1.5d-2
+  integer, parameter      :: jmax          = 185
+  real(kind=8), parameter :: dy0           = 8.d-4
+  real(kind=8), parameter :: stf           = 1.01d0
   real(kind=8), parameter :: x0            = 1.d0
-  real(kind=8), parameter :: Re            = 3.65d5
-  real(kind=8), parameter :: Pr            = 1.d0
+  real(kind=8), parameter :: Re            = 33124.d0
+  real(kind=8), parameter :: Pr            = 0.72d0
   integer, parameter      :: lvls          = 4
 
   ! Falkner-Skan constants

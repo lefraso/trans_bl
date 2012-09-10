@@ -219,48 +219,44 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       implicit none
       include '../par.for'
       include '../comm.coef'
+      include '../comm.multi'
       integer i, j
       real*8 rhs(ptsx,jmax), fc(ptsx,jmax)
-      real*8 ay
 
       do i = 1, ptsx
-        ay = dy
-        rhs(i,1) = (1.d0/ay) * ( fp_fd_coef(3) * fc(i,1)
-     &                         + fp_fd_coef(4) * fc(i,2)
-     &                         + fp_fd_coef(5) * fc(i,3)
-     &                         + fp_fd_coef(6) * fc(i,4)
-     &                         + fp_fd_coef(7) * fc(i,5) )
+        rhs(i,1) = v_qdy(1) * ( fp_fd_coef(3) * fc(i,1)
+     &                        + fp_fd_coef(4) * fc(i,2)
+     &                        + fp_fd_coef(5) * fc(i,3)
+     &                        + fp_fd_coef(6) * fc(i,4)
+     &                        + fp_fd_coef(7) * fc(i,5) )
  
-        rhs(i,2) = (1.d0/ay) * ( sp_fd_coef(4) * fc(i,1)
-     &                         + sp_fd_coef(5) * fc(i,2)
-     &                         + sp_fd_coef(6) * fc(i,3)
-     &                         + sp_fd_coef(7) * fc(i,4)
-     &                         + sp_fd_coef(8) * fc(i,5)
-     &                         + sp_fd_coef(9) * fc(i,6) )
+        rhs(i,2) = v_qdy(1) * ( sp_fd_coef(4) * fc(i,1)
+     &                        + sp_fd_coef(5) * fc(i,2)
+     &                        + sp_fd_coef(6) * fc(i,3)
+     &                        + sp_fd_coef(7) * fc(i,4)
+     &                        + sp_fd_coef(8) * fc(i,5)
+     &                        + sp_fd_coef(9) * fc(i,6) )
  
        do j = 3, jmax - 2
-         ay = dy * stf**(j-3)
-         rhs(i,j) = (1.d0/ay) * ( cp_fd_coef(4) * fc(i,j-2)
-     &                          + cp_fd_coef(5) * fc(i,j-1)
-     &                          + cp_fd_coef(6) * fc(i,j)
-     &                          + cp_fd_coef(7) * fc(i,j+1)
-     &                          + cp_fd_coef(8) * fc(i,j+2) )
+         rhs(i,j) = v_qdy(j-2) * ( cp_fd_coef(4) * fc(i,j-2)
+     &                           + cp_fd_coef(5) * fc(i,j-1)
+     &                           + cp_fd_coef(6) * fc(i,j)
+     &                           + cp_fd_coef(7) * fc(i,j+1)
+     &                           + cp_fd_coef(8) * fc(i,j+2) )
        end do
  
-       ay = dy * stf**(jmax-6)
-       rhs(i,jmax-1) = (1.d0/ay) * ( pp_fd_coef(4)*fc(i,jmax)
-     &                             + pp_fd_coef(5)*fc(i,jmax-1)
-     &                             + pp_fd_coef(6)*fc(i,jmax-2)
-     &                             + pp_fd_coef(7)*fc(i,jmax-3)
-     &                             + pp_fd_coef(8)*fc(i,jmax-4)
-     &                             + pp_fd_coef(9)*fc(i,jmax-5) )
+       rhs(i,jmax-1) = v_qdy(jmax-5) * ( pp_fd_coef(4)*fc(i,jmax)
+     &                                 + pp_fd_coef(5)*fc(i,jmax-1)
+     &                                 + pp_fd_coef(6)*fc(i,jmax-2)
+     &                                 + pp_fd_coef(7)*fc(i,jmax-3)
+     &                                 + pp_fd_coef(8)*fc(i,jmax-4)
+     &                                 + pp_fd_coef(9)*fc(i,jmax-5) )
  
-       ay = dy * stf**(jmax-5)
-       rhs(i,jmax) = (1.d0/ay) * ( lp_fd_coef(3) * fc(i,jmax)
-     &                           + lp_fd_coef(4) * fc(i,jmax-1)
-     &                           + lp_fd_coef(5) * fc(i,jmax-2)
-     &                           + lp_fd_coef(6) * fc(i,jmax-3)
-     &                           + lp_fd_coef(7) * fc(i,jmax-4) )
+       rhs(i,jmax) = v_qdy(jmax-4) * ( lp_fd_coef(3) * fc(i,jmax)
+     &                               + lp_fd_coef(4) * fc(i,jmax-1)
+     &                               + lp_fd_coef(5) * fc(i,jmax-2)
+     &                               + lp_fd_coef(6) * fc(i,jmax-3)
+     &                               + lp_fd_coef(7) * fc(i,jmax-4) )
       end do
 
       return
@@ -274,44 +270,41 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       implicit none
       include '../par.for'
       include '../comm.coef'
+      include '../comm.multi'
       integer i, j
       real*8 rhs(ptsx,jmax), fc(ptsx,jmax)
-      real*8 ay
 
       do i = 1, ptsx
+
         rhs(i,1) = 0.d0
  
-        ay = dy
-        rhs(i,2) = (1.d0/ay) * ( sp_fd_coef(4) * fc(i,1)
-     &                         + sp_fd_coef(5) * fc(i,2)
-     &                         + sp_fd_coef(6) * fc(i,3)
-     &                         + sp_fd_coef(7) * fc(i,4)
-     &                         + sp_fd_coef(8) * fc(i,5)
-     &                         + sp_fd_coef(9) * fc(i,6) )
+        rhs(i,2) = v_qdy(1) * ( sp_fd_coef(4) * fc(i,1)
+     &                        + sp_fd_coef(5) * fc(i,2)
+     &                        + sp_fd_coef(6) * fc(i,3)
+     &                        + sp_fd_coef(7) * fc(i,4)
+     &                        + sp_fd_coef(8) * fc(i,5)
+     &                        + sp_fd_coef(9) * fc(i,6) )
  
        do j = 3, jmax - 2
-         ay = dy * stf**(j-3)
-         rhs(i,j) = (1.d0/ay) * ( cp_fd_coef(4) * fc(i,j-2)
-     &                          + cp_fd_coef(5) * fc(i,j-1)
-     &                          + cp_fd_coef(6) * fc(i,j)
-     &                          + cp_fd_coef(7) * fc(i,j+1)
-     &                          + cp_fd_coef(8) * fc(i,j+2) )
+         rhs(i,j) = v_qdy(j-2) * ( cp_fd_coef(4) * fc(i,j-2)
+     &                           + cp_fd_coef(5) * fc(i,j-1)
+     &                           + cp_fd_coef(6) * fc(i,j)
+     &                           + cp_fd_coef(7) * fc(i,j+1)
+     &                           + cp_fd_coef(8) * fc(i,j+2) )
        end do
  
-       ay = dy * stf**(jmax-6)
-       rhs(i,jmax-1) = (1.d0/ay) * ( pp_fd_coef(4) * fc(i,jmax)
-     &                             + pp_fd_coef(5) * fc(i,jmax-1)
-     &                             + pp_fd_coef(6) * fc(i,jmax-2)
-     &                             + pp_fd_coef(7) * fc(i,jmax-3)
-     &                             + pp_fd_coef(8) * fc(i,jmax-4)
-     &                             + pp_fd_coef(9) * fc(i,jmax-5) )
+       rhs(i,jmax-1) = v_qdy(jmax-5) * ( pp_fd_coef(4)*fc(i,jmax)
+     &                                 + pp_fd_coef(5)*fc(i,jmax-1)
+     &                                 + pp_fd_coef(6)*fc(i,jmax-2)
+     &                                 + pp_fd_coef(7)*fc(i,jmax-3)
+     &                                 + pp_fd_coef(8)*fc(i,jmax-4)
+     &                                 + pp_fd_coef(9)*fc(i,jmax-5) )
  
-       ay = dy * stf**(jmax-5)
-       rhs(i,jmax) = (1.d0/ay) * ( lp_fd_coef(3) * fc(i,jmax)
-     &                           + lp_fd_coef(4) * fc(i,jmax-1)
-     &                           + lp_fd_coef(5) * fc(i,jmax-2)
-     &                           + lp_fd_coef(6) * fc(i,jmax-3)
-     &                           + lp_fd_coef(7) * fc(i,jmax-4) )
+       rhs(i,jmax) = v_qdy(jmax-4) * ( lp_fd_coef(3) * fc(i,jmax)
+     &                               + lp_fd_coef(4) * fc(i,jmax-1)
+     &                               + lp_fd_coef(5) * fc(i,jmax-2)
+     &                               + lp_fd_coef(6) * fc(i,jmax-3)
+     &                               + lp_fd_coef(7) * fc(i,jmax-4) )
       end do
 
       return
@@ -325,22 +318,19 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       implicit none
       include '../par.for'
       include '../comm.coef'
+      include '../comm.multi'
       integer i, j
       real*8 rhs(ptsx,jmax), fc(ptsx,jmax)
-      real*8 ayy
 
       do i = 1, ptsx
-
-        ayy = dy**2
 
         rhs(i,1) = ( fp_sd_coef(3) * fc(i,1)
      &             + fp_sd_coef(4) * fc(i,2)
      &             + fp_sd_coef(5) * fc(i,3)
      &             + fp_sd_coef(6) * fc(i,4)
      &             + fp_sd_coef(7) * fc(i,5)
-     &             + fp_sd_coef(8) * fc(i,6) ) /
-     &              ( ayy )
- 
+     &             + fp_sd_coef(8) * fc(i,6) ) *
+     &              v_qdy2(1,1)
 
         rhs(i,2) = ( sp_sd_coef(4)  * fc(i,1)
      &             + sp_sd_coef(5)  * fc(i,2)
@@ -348,37 +338,34 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &             + sp_sd_coef(7)  * fc(i,4)
      &             + sp_sd_coef(8)  * fc(i,5)
      &             + sp_sd_coef(9)  * fc(i,6)
-     &             + sp_sd_coef(10) * fc(i,7) ) /
-     &             ( ayy )
+     &             + sp_sd_coef(10) * fc(i,7) ) *
+     &             v_qdy2(1,1)
 
        do j = 3, jmax - 2
-         ayy = (dy*stf**(j-3))**2
          rhs(i,j) = ( cp_sd_coef(4) * fc(i,j-2)
      &              + cp_sd_coef(5) * fc(i,j-1)
      &              + cp_sd_coef(6) * fc(i,j)
      &              + cp_sd_coef(7) * fc(i,j+1)
-     &              + cp_sd_coef(8) * fc(i,j+2) ) / ( ayy )
+     &              + cp_sd_coef(8) * fc(i,j+2) ) * 
+     &                v_qdy2(j-2,1)
        end do
  
-      ayy = (dy*stf**(jmax-7))**2
-
       rhs(i,jmax-1) = ( pp_sd_coef(4)  * fc(i,jmax)
      &                + pp_sd_coef(5)  * fc(i,jmax-1)
      &                + pp_sd_coef(6)  * fc(i,jmax-2)
      &                + pp_sd_coef(7)  * fc(i,jmax-3)
      &                + pp_sd_coef(8)  * fc(i,jmax-4)
      &                + pp_sd_coef(9)  * fc(i,jmax-5)
-     &                + pp_sd_coef(10) * fc(i,jmax-6) ) /
-     &                ( ayy )
- 
-      ayy = (dy*stf**(jmax-6))**2
+     &                + pp_sd_coef(10) * fc(i,jmax-6) ) *
+     &                v_qdy2(jmax-6,1)
  
       rhs(i,jmax) = ( lp_sd_coef(3) * fc(i,jmax)
      &              + lp_sd_coef(4) * fc(i,jmax-1)
      &              + lp_sd_coef(5) * fc(i,jmax-2)
      &              + lp_sd_coef(6) * fc(i,jmax-3)
      &              + lp_sd_coef(7) * fc(i,jmax-4)
-     &              + lp_sd_coef(8) * fc(i,jmax-5) ) / ( ayy )
+     &              + lp_sd_coef(8) * fc(i,jmax-5) ) * 
+     &                v_qdy2(jmax-5,1)
       end do
 
       return

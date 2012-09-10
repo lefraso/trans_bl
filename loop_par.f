@@ -31,8 +31,11 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
                else
                 wz(i,j,k) = wz(i,j,k) * bdfc(bdt,i+shift)
               end if
-             case default
+             case(1) 
                wz(i,j,k) = wz(i,j,k) * bdfc(bdt,i+shift)
+             case(2) 
+               wz(i,j,k) = wz(i,j,k) * bdfc(bdt,i+shift)
+               th(i,j,k) = th(i,j,k) * bdfc(bdt,i+shift)
             end select
           end do
         end do
