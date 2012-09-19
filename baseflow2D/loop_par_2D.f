@@ -184,16 +184,12 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       real*8 var(jmax), xad, ue, aux(2), dvdx(ptsx,jmax),
      &       duydy(ptsx,jmax), dvdxa, dya, m
 
-!!!! OTIMIZAR PARA CALCULAR SOMENTE NO PONTO I = 1
-c     call derparx(dvdx,uy)
-
       if (my_rank.eq.0) then
         do j = 1, jmax
           dvdxa = ( - 1764.d0 * uy(1,j) + 4320.d0 * uy(2,j)
      &              - 5400.d0 * uy(3,j) + 4800.d0 * uy(4,j)
      &              - 2700.d0 * uy(5,j) + 864.d0 *  uy(6,j)
      &              -  120.d0 * uy(7,j) ) / (720.d0 * dx)
-c         var(j) = dvdx(1,j) + wz(1,j)
           var(j) = dvdxa + wz(1,j)
         end do
      
@@ -298,7 +294,6 @@ c         var(j) = dvdx(1,j) + wz(1,j)
       end if
       call MPI_BCAST(ue, 1, mpi_double_precision, 0, mpi_comm_world,
      &               ierr)
-!     m = beta_fs / (2.d0 - beta_fs)
       do i = 1, ptsx
         xad        = dble(i+shift-1)*dx + x0
         m          = beta_fs(i+shift-1) / (2.d0 - beta_fs(i+shift-1))

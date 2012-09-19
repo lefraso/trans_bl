@@ -70,7 +70,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         write(1) uxp
         close (unit=1)
 
-       case(1)
+       case default
         open(1,file=nm,form='unformatted')
         write(1) ux
         close (unit=1)

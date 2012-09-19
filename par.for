@@ -15,7 +15,7 @@ c     start the program from t = 0 (start=0) or from a given time t (start=1)
 c     imaginary number
       parameter ( im = (0.d0,1.d0) )
 
-c     alpha (streamwise wavelength) and omega (frequency)
+c     alpha (streamwise wavelength) and omega (frequency) omega = F(Hz)*2*pi*L/U
       parameter ( alpha = 0.45723605d0, omega = 16.3362818d0 ) ! 130 Hz
 
 c     value of beta (spanwise wavelength)
@@ -65,7 +65,7 @@ c     usados para solucao de poisson paralelizado
       parameter ( meshdx  = 12 )
 
 c     Filter constants (Lele C.2.5)
-      parameter ( alphaf = 0.40d0 )
+      parameter ( alphaf = 0.48d0 )
       parameter ( af = (  11.d0 + 10.d0 * alphaf) / 16.d0 )
       parameter ( bf = (  15.d0 + 34.d0 * alphaf) / 64.d0 ) !/2
       parameter ( cf = (-  3.d0 +  6.d0 * alphaf) / 32.d0 ) !/2

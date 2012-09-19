@@ -255,8 +255,8 @@ c           call ts3d_pert(t, 1.d0)
         
         fanal = stpp / 16
         
-        do t = t0, tt + 15 * fanal
-c       do t = t0, tt
+c       do t = t0, tt + 15 * fanal
+        do t = t0, tt
         
           ! first Runge-Kutta step
           call drv_gv(dv1x, dv1y, dv1z)

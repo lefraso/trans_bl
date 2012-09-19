@@ -15,7 +15,7 @@ cd /temp
 rm -r lefraso
 mkdir -p lefraso
 cd lefraso
-cp -r /home/lefraso/rugosidade/freq250_beta0_stf1/* .
+cp -r /cluster/lefraso/trans_bl/* .
 sleep 5
 
 rm pre_processing/constants.f90
@@ -47,6 +47,6 @@ sleep 5
 echo "Saindo do daemon do MPD..."
 mpdallexit
 
-mkdir /home/lefraso/rugosidade/res_freq250_beta0_stf1
-cp -r * /home/lefraso/rugosidade/res_freq250_beta0_stf1/.
+mkdir /cluster/lefraso/res_freq250_beta0_stf1
+cp -r * /cluster/lefraso/res_freq250_beta0_stf1/.
 echo "Sucesso!"
