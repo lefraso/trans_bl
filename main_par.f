@@ -732,7 +732,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           else
            y = dy * (stf**(j-1)-1.d0)/(stf-1.d0)  
           endif        
-          varg(i,j) = kc / (1.d0 - kc * y)
+c         varg(i,j) = kc / (1.d0 - kc * y)
+          varg(i,j) = kc
         end do
       end do
 c     call derparxr(dvargdx,varg) ! this is used for variable curvature
@@ -975,7 +976,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           else
            y = dy * (stf**(j-1)-1.d0)/(stf-1.d0)  
           endif        
-          varg(i,j) = kc / (1.d0 - kc * y)
+!         varg(i,j) = kc / (1.d0 - kc * y)
+          varg(i,j) = kc
         end do
       end do
 c     call derparxr(dvargdx,varg) ! this is used for variable curvature

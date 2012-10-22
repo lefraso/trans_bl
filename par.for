@@ -16,7 +16,8 @@ c     imaginary number
       parameter ( im = (0.d0,1.d0) )
 
 c     alpha (streamwise wavelength) and omega (frequency) omega = F(Hz)*2*pi*L/U
-      parameter ( alpha = 0.45723605d0, omega = 16.3362818d0 ) ! 130 Hz
+c     parameter ( alpha = 0.45723605d0, omega = 16.3362818d0 ) ! 130 Hz
+      parameter ( alpha = 22.6d0, omega = 10.758878952d0 ) ! 250 Hz
 
 c     value of beta (spanwise wavelength)
       parameter ( beta = 34.9065850399d0 )
@@ -25,18 +26,22 @@ c     initial and end point of disturbance strip
       parameter ( i0 = 30, i1 = 50, i2 = 80 )
 
 c     Reynolds Number, Prandtl Number and initial x of the domain
-      parameter ( Re = 33124.d0, Pr = 0.72d0, x0 = 1.d0 )
+c     parameter ( Re = 33124.d0, Pr = 0.72d0, x0 = 1.d0 )
+      parameter ( Re = 3.65d5, Pr = 0.72d0, x0 = 1.d0 )
 
 c     number of points in y direction and delta y(dy/sqrt(re*x0))
-      parameter ( jmax = 185, dy = 8.d-4, dyy = dy * dy )
+c     parameter ( jmax = 185, dy = 8.d-4, dyy = dy * dy )
+      parameter ( jmax = 121, dy = 5.d-4, dyy = dy*dy )
       parameter ( stf = 1.01d0 )
       
 c     number of processing elements
       parameter ( np = 8 )
 
 c     number of points in x direction and delta x
-      parameter ( imax = 857, ptsx = (imax + (np - 1) * 25) / np )
-      parameter ( dx = 1.5d-2, dxx = dx * dx )
+c     parameter ( imax = 857, ptsx = (imax + (np - 1) * 25) / np )
+      parameter ( imax = 665, ptsx = (imax + (np - 1) * 25) / np )
+c     parameter ( dx = 1.5d-2, dxx = dx * dx )
+      parameter ( dx = 6.25d-3, dxx = dx * dx )
 
 c     steps per period, number of time steps and time step(2*pi/omega/stpp)
       parameter ( stpp = 128, tt = 400 * stpp )

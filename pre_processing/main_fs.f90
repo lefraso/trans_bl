@@ -2,7 +2,7 @@
 
 ! use constants
   use fs
-  real(kind = 8) :: fpp(imax), thp(imax), eta_adp
+  real(kind = 8) :: fpp(imax), thp(imax), eta_adp, m
   integer        :: i
 
   ! reads beta_fs from a file
@@ -19,6 +19,13 @@
    call fpp_finder(fpp(i), eta_adp, i)
    call delta_calculation(fpp(i), eta_adp, i)
   enddo
+
+  open(2,file='../lst_ts/fpp.dat',form='formatted')
+  do i = 1, imax
+    m = beta_fs(i)/(2.d0 - beta_fs(i))
+    write(2,*) fpp(i) * dsqrt((m+1.d0)/2.d0)
+  end do
+  close(unit=2)
  
   if (my_form.eq.2) then
     do i = 1, imax
