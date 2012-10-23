@@ -8,7 +8,7 @@
       real*8 eta(jm), h(jm), hp(jm), y(jm), yp(jm), x, reout,
      &       wslope, etamax, bl, re0, w0, beta, w0in, betain, rein, 
      &       fpp(10000), dx_dns, Re_dns, beta_dns, omega_dns, 
-     &       beta_fs(10000)
+     &       beta_fs(10000), delta_re
       common /data/ re, alfa, alfa0, freq, beta, re0, w0,
      &       /blas/ wslope, etamax,
      &       /cons/ z1, z2, z3, z4
@@ -42,8 +42,6 @@ c************************************************************************
       w0in   = w0
       betain = beta
       rein   = re0
-      x      = 6.d0
-      reout  = sqrt(x) * rein
 
       call geom(eta,y,h,hp,bl,etamax,jmax,jedge)
 
@@ -77,10 +75,13 @@ c************************************************************************
       rein   = re0
       w0in   = w0
       betain = beta
+!     x      = 1.d0 + dble(imax-1) * dx
+!     reout  = sqrt(x) * rein
+      delta_re = rein * dsqrt(dx)
 
       do i = 1, imax
          wslope = fpp(i)
-         re0    = rein + dble(i-1)*dx_dns !VER ISTO AINDA NÃO CHEGAMOS A UM CONSENSO
+         re0    = rein + dble(i-1)*delta_re !VER ISTO AINDA NÃO CHEGAMOS A UM CONSENSO
          w0     = w0in * re0 / rein
          call evalue (zeig,jmax,eta,yp)
 c        call eigen (eta,y,h,hp,zeig,jmax,jedge)
