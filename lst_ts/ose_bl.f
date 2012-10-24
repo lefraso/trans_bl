@@ -7,9 +7,9 @@
      &           z1, z2, z3, z4, dalfa
       real*8 eta(jm), h(jm), hp(jm), y(jm), yp(jm), x, reout,
      &       wslope, etamax, bl, re0, w0, beta, w0in, betain, rein, 
-     &       fpp(10000), dx_dns, Re_dns, beta_dns, omega_dns, 
-     &       beta_fs(10000), delta_re
-      common /data/ re, alfa, alfa0, freq, beta, re0, w0,
+     &       fpp(10000), dx, Re_dns, beta_dns, omega_dns, beta_fsin, 
+     &       betafs(10000), delta_re, beta_fs, wslopein, rea
+      common /data/ re, alfa, alfa0, freq, beta, re0, w0, beta_fs,
      &       /blas/ wslope, etamax,
      &       /cons/ z1, z2, z3, z4
       namelist/osedata/ re0, w0, alfa0, jedge, bl, etamax, beta, wslope
@@ -27,25 +27,26 @@ c************************************************************************
       close (unit=1)
 
       open(2,file='datalst.dat',form='formatted')
-        read(2,*) Re_dns, omega_dns, beta_dns, imax, dx_dns
+        read(2,*) Re_dns, omega_dns, beta_dns, imax, dx
       close(unit=2)
 
       open(3,file='fpp.dat',form='formatted')
       open(4,file='../beta_fs.dist',form='formatted')
       do i = 1, imax
         read(3,*) fpp(i)
-        read(4,*) beta_fs(i)
+        read(4,*) betafs(i)
       end do
       close(unit=3)
       close(unit=4)
 
-      w0in   = w0
-      betain = beta
-      rein   = re0
+      w0in    = w0
+      betain  = beta
+      rein    = re0
+      beta_fs = 0.d0
 
       call geom(eta,y,h,hp,bl,etamax,jmax,jedge)
 
-! loop para Reybolds
+! loop para Reynolds
       do i = 1, 1000
          re0  = rein + dble(i-1)*(re_dns-rein)/1000.d0
          call evalue (zeig,jmax,eta,yp)
@@ -72,23 +73,43 @@ c************************************************************************
          call evalue (zeig,jmax,eta,yp)
       end do
 
-      rein   = re0
-      w0in   = w0
-      betain = beta
-!     x      = 1.d0 + dble(imax-1) * dx
-!     reout  = sqrt(x) * rein
-      delta_re = rein * dsqrt(dx)
+      rein     = re_dns
+      re0     = re_dns
+      w0in     = w0
+      betain   = beta
+     
+      write(*,*) re_dns
+
+      delta_re = -re0 + dsqrt(re0**2*(1.d0+dx))
+!     x        = 1.d0 + dble(imax-1) * dx 
+!     reout    = sqrt(x) * rein
+
+
+      open (1, file = 'lst.dat', status = 'unknown')
+      write(1,*) 'VARIABLES="x","alfa"'
+      write(1,*) 'ZONE T=LST", I=',imax
 
       do i = 1, imax
-         wslope = fpp(i)
-         re0    = rein + dble(i-1)*delta_re !VER ISTO AINDA NÃO CHEGAMOS A UM CONSENSO
-         w0     = w0in * re0 / rein
-         call evalue (zeig,jmax,eta,yp)
-c        call eigen (eta,y,h,hp,zeig,jmax,jedge)
-         x = (re0/rein)**2
-         write(*,*)re0,w0,alfa0
-         write(4,*)x,-dimag(alfa0)*rein**2/re0
+        wslope   = fpp(i)
+        beta_fs  = betafs(i) 
+        re0      = rein + dble(i-1)*delta_re 
+c       if (i.gt.1) then
+c        re_dns  = rein + dble(i-1)*delta_re
+c        rea  = rein + dble(i-2)*delta_re
+c        do j = 1, 500 
+c          re0  = rea + dble(j-1)*(re_dns-rea)/500.d0
+c          call evalue (zeig,jmax,eta,yp)
+c        end do
+c       endif 
+        w0      = w0in * re0 / rein
+        call evalue (zeig,jmax,eta,yp)
+c       call eigen (eta,y,h,hp,zeig,jmax,jedge)
+        x       = (re0/rein)**2
+        write(*,*)i,x,re0,alfa0
+        write(1,3)x,-dimag(alfa0)*rein**2/re0
       end do
+      close (unit=1)
+    3 format(1x,2e17.9)
 
       stop
       end
@@ -101,14 +122,16 @@ c        call eigen (eta,y,h,hp,zeig,jmax,jedge)
       complex*16 utot, uptot, upptot, zy(nm), zd(nm),
      &           re, alfa, alfa0, freq,
      &           z1, z2, z3, z4, z5, z6, z7, z8, z9
-      real*8 beta, re0, w0, x
-      common /data/ re, alfa, alfa0, freq, beta, re0, w0,
+      real*8 beta, re0, w0, x, m, beta_fs
+      common /data/ re, alfa, alfa0, freq, beta, re0, w0, beta_fs,
      &       /cons/ z1, z2, z3, z4
+
+      m = beta_fs / (2.d0 - beta_fs)
 
       zd(1)  = zy(2)
       zd(2)  = zy(3)
-      zd(3)  = - dcmplx(.5d0) * zy(1) * zy(3)
-
+      zd(3)  = - dcmplx((m + 1.d0)/ 2.d0) * zy(1) * zy(3)
+     &         - dcmplx(m) * ( dcmplx(1.d0) - zy(2)**2 ) 
       utot   = zy(2) 
       uptot  = zy(3)
       upptot = zd(3) 
@@ -328,13 +351,13 @@ c.......................................................exponential decay
       end do
 
 c..............................................write the Blasius solution
-      open(unit=3,file='mean.dat',status='unknown')
-      do j = 1, jedge - 1
-         write(3,*) fo(1,j), fo(2,j), fo(3,j)
+c     open(unit=3,file='mean.dat',status='unknown')
+c     do j = 1, jedge - 1
+c        write(3,*) fo(1,j), fo(2,j), fo(3,j)
 c         write(99,*) real(eta(j)), real(fo(1,j)), real(fo(2,j)), 
 c    &    real(fo(3,j))
-      end do
-      close(unit=3)
+c     end do
+c     close(unit=3)
 
       call out(eta,y,zfi,fo,h,hp,jedge)
 
@@ -367,7 +390,7 @@ c    &    real(fo(3,j))
       z4     = z2 * (- z2 + z1)
 
       call init(zdet1,zeig,jmax,eta,yp)
-      write(*,*)alfa0
+c     write(*,*)alfa0
 
       zx1   = alfa
       zfl   = zdet1
@@ -381,7 +404,7 @@ c    &    real(fo(3,j))
       z4    = z2 * (- z2 + z1)
 
       call init (zdet2,zeig,jmax,eta,yp)
-      write(*,*)alfa0
+c     write(*,*)alfa0
 
       zx2 = alfa
       zf  = zdet2
@@ -412,7 +435,7 @@ c    &    real(fo(3,j))
          z4     = z2 * (- z2 + z1)
 
          call init (zf,zeig,jmax,eta,yp)
-         write(*,*)alfa0
+c        write(*,*)alfa0
 
          ratr = dreal(zdx)/dreal(zrtsec)
          if (dabs(dimag(zrtsec)).ge.1.d-6) then
@@ -452,12 +475,12 @@ c...............................................for mapping 0-infinty use
       end do
       y(jedge)  = 1.d0
 
-      write(*,*)
-      write(*,*)'L      = ',etal
-      write(*,*)'jedge  = ',jedge
-      write(*,*)'jmax   = ',jmax
-      write(*,*)'etamax = ',etamax, eta(jmax)
-      write(*,*)
+c     write(*,*)
+c     write(*,*)'L      = ',etal
+c     write(*,*)'jedge  = ',jedge
+c     write(*,*)'jmax   = ',jmax
+c     write(*,*)'etamax = ',etamax, eta(jmax)
+c     write(*,*)
 
       eta(jmax) = etamax
 
@@ -646,9 +669,9 @@ c........(the norm of the diff between the present and previous solution)
 
       end do           ! do while (test.ge.1.d-14)
 
-      write(*,*)
-      write(*,*)'convergency is accurate to ',test
-      write(*,*)'after ',icont,' iterations'
+c     write(*,*)
+c     write(*,*)'convergency is accurate to ',test
+c     write(*,*)'after ',icont,' iterations'
 
       return
       end
@@ -806,7 +829,7 @@ c........(the norm of the diff between the present and previous solution)
             do i = 1, nvar
                zystart(i) = zy(i)
             end do
-            write(*,*)jcount
+c           write(*,*)jcount
             return
          endif
 
@@ -1062,10 +1085,10 @@ c.........................operate on all vector below the present vector
 
       real*8 u(jm), up(jm), upp(jm), ul(jm),
      &       fo(3,jm), eta(jm), y(jm), h(jm), hp(jm),
-     &       f, fp, fpp, f3p, beta, re0, w0,
+     &       f, fp, fpp, f3p, beta, re0, w0, m, beta_fs,
      &       urmax, uimax, vrmax, vimax, wrmax, wimax
 
-      common /data/ re, alfa, alfa0, freq, beta, re0, w0
+      common /data/ re, alfa, alfa0, freq, beta, re0, w0, beta_fs
 
       urmax = 0.d0
       uimax = 0.d0
@@ -1080,12 +1103,15 @@ c.........................operate on all vector below the present vector
       jwrmax = 0
       jwimax = 0
 
+      m = beta_fs / (2.d0 - beta_fs) 
+
       do j=1,jedge-1
 c.........................................................stream function
          f   = fo(1,j)
          fp  = fo(2,j)
          fpp = fo(3,j)
-         f3p = - 0.5d0 * fo(1,j) * fo(3,j)
+         f3p = - ( m + 1.d0 ) / 2.d0 * fo(1,j) * fo(3,j)
+     &         - m * ( 1.d0 - fo(2,j)**2 )    
 
 c.........................................mean flow velocity distribution
          u(j)   = fp
@@ -1136,10 +1162,10 @@ c......................................for pressure use equation for ubar
 
       do j=1,jedge
 
-         write(11,*)j, zu(1,j)
-         write(12,*)j, zu(2,j)
-         write(13,*)j, zu(3,j)
-         write(14,*)j, zu(4,j)
+c        write(11,*)j, zu(1,j)
+c        write(12,*)j, zu(2,j)
+c        write(13,*)j, zu(3,j)
+c        write(14,*)j, zu(4,j)
 
 c        if(dabs(dreal(zu(1,j))).ge.dabs(urmax)) then
 c           urmax = dreal(zu(1,j))
@@ -1185,9 +1211,9 @@ c        write(40,110)zu(4,j), eta(j)
 c     end do
  110  format(3(e22.12))
 
-      open(unit=15,file='alphats.dat',status='unknown')
-         write(15,*)im*alfa0
-      close(unit=15)
+c     open(unit=15,file='alphats.dat',status='unknown')
+c        write(15,*)im*alfa0
+c     close(unit=15)
 
 c     open(unit=10,file='ur.dat',access='append',status='unknown')
 c     open(unit=20,file='ui.dat',access='append',status='unknown')
