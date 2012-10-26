@@ -74,34 +74,21 @@ c************************************************************************
       end do
 
       rein     = re_dns
-      re0     = re_dns
+      re0      = re_dns
       w0in     = w0
       betain   = beta
-     
-      write(*,*) re_dns
-
-      delta_re = -re0 + dsqrt(re0**2*(1.d0+dx))
-!     x        = 1.d0 + dble(imax-1) * dx 
-!     reout    = sqrt(x) * rein
-
 
       open (1, file = 'lst.dat', status = 'unknown')
       write(1,*) 'VARIABLES="x","alfa"'
       write(1,*) 'ZONE T=LST", I=',imax
 
       do i = 1, imax
-        wslope   = fpp(i)
-        beta_fs  = betafs(i) 
-        re0      = rein + dble(i-1)*delta_re 
-c       if (i.gt.1) then
-c        re_dns  = rein + dble(i-1)*delta_re
-c        rea  = rein + dble(i-2)*delta_re
-c        do j = 1, 500 
-c          re0  = rea + dble(j-1)*(re_dns-rea)/500.d0
-c          call evalue (zeig,jmax,eta,yp)
-c        end do
-c       endif 
+        x       = 1.d0 + dble(i-1)*dx
+        wslope  = fpp(i)
+        beta_fs = betafs(i) 
+        re0     = rein * dsqrt(x) 
         w0      = w0in * re0 / rein
+        beta    = betain * re0 / rein
         call evalue (zeig,jmax,eta,yp)
 c       call eigen (eta,y,h,hp,zeig,jmax,jedge)
         x       = (re0/rein)**2

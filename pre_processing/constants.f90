@@ -6,7 +6,7 @@
   implicit none
 
   ! General constants
-  integer, parameter      :: my_form       = 2
+  integer, parameter      :: my_form       = 0
   integer, parameter      :: imax          = 665
   real(kind=8), parameter :: dx            = 6.25d-3
   integer, parameter      :: jmax          = 121

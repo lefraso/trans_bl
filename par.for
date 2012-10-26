@@ -7,7 +7,7 @@
 
 c     Immersed simulations my_form = 0, Gortler simulations my_form = 1
 c     Gortler simulations with heat transfer my_form = 2
-      parameter ( my_form = 2 )
+      parameter ( my_form = 0 )
 
 c     start the program from t = 0 (start=0) or from a given time t (start=1)
       parameter ( start = 0 )
@@ -17,10 +17,14 @@ c     imaginary number
 
 c     alpha (streamwise wavelength) and omega (frequency) omega = F(Hz)*2*pi*L/U
 c     parameter ( alpha = 0.45723605d0, omega = 16.3362818d0 ) ! 130 Hz
-      parameter ( alpha = 22.6d0, omega = 10.758878952d0 ) ! 250 Hz
+c     parameter ( alpha = 22.6d0, omega = 10.758878952d0 ) ! 250 Hz
+      parameter ( alpha = 22.6d0, omega = 23.669533695d0 ) ! 550 Hz
+c     parameter ( alpha = 22.6d0, omega = 30.124861066d0 ) ! 700 Hz
 
 c     value of beta (spanwise wavelength)
-      parameter ( beta = 34.9065850399d0 )
+      parameter ( beta = 5.d0 )
+c     parameter ( beta = 12.566370616d0 )
+c     parameter ( beta = 34.9065850399d0 )
 
 c     initial and end point of disturbance strip
       parameter ( i0 = 30, i1 = 50, i2 = 80 )
