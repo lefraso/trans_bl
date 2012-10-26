@@ -80,7 +80,7 @@ c************************************************************************
 
       open (1, file = 'lst.dat', status = 'unknown')
       write(1,*) 'VARIABLES="x","alfa"'
-      write(1,*) 'ZONE T=LST", I=',imax
+      write(1,*) 'ZONE T=LST, I=',imax
 
       do i = 1, imax
         x       = 1.d0 + dble(i-1)*dx
