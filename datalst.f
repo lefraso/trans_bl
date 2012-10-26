@@ -1,11 +1,14 @@
       program geradatalst
 
       implicit none
-      include 'par.for'
+      integer f
+      include '../par.for'
 
-      open(2,file='lst_ts/datalst.dat',form='formatted')
-        write(2,*) dsqrt(Re), omega/dsqrt(Re), beta*0.d0/dsqrt(Re), 
-     &             imax, dx*dsqrt(Re)
+      write(*,*) 'This analysis is for a 2D (0) or a 3D (1) T-S wave ?'
+      read(*,*) f
+      open(2,file='datalst.dat',form='formatted')
+        write(2,*) dsqrt(Re), omega/dsqrt(Re), beta*dble(f)/dsqrt(Re),
+     &             imax, dx
       close(unit=2)
 
       stop

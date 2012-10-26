@@ -182,7 +182,7 @@ c first derivatives calculation in x direction
           ddx(i,f) = ( -         fc(i-3,f) +  9.d0 * fc(i-2,f)
      &                 - 45.d0 * fc(i-1,f) + 45.d0 * fc(i+1,f)
      &                 -  9.d0 * fc(i+2,f) +         fc(i+3,f) )
-     &               / ( 60.d0 * (2.d0*dx) )
+     &               / ( 60.d0 * (2.d0*dx) ) ! data analised each second point in x direction
         end do
       end do
       
