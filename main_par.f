@@ -732,7 +732,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           else
            y = dy * (stf**(j-1)-1.d0)/(stf-1.d0)  
           endif        
-c         varg(i,j) = kc / (1.d0 - kc * y)
           varg(i,j) = kc
         end do
       end do
@@ -976,7 +975,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           else
            y = dy * (stf**(j-1)-1.d0)/(stf-1.d0)  
           endif        
-!         varg(i,j) = kc / (1.d0 - kc * y)
           varg(i,j) = kc
         end do
       end do
