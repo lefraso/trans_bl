@@ -29,6 +29,22 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine derparxr(ddx,fc)
+
+      ! first derivatives calculation in x direction
+      implicit none
+      include 'par.gv'
+      real*8 a1x(ptsx), b1x(ptsx), c1x(ptsx),
+     &       fc(ptsx,jmax), ddx(ptsx,jmax)
+      common/der1x/ a1x,b1x,c1x
+
+      call rhsxr(fc,ddx)
+      call tridparxr(a1x,b1x,c1x,ddx)
+      
+      return
+      end
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       subroutine derparx(ddx,fc)
 
       ! first derivatives calculation in x direction
@@ -109,6 +125,43 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       call rhsyy(fc,d2dy2)
       call tridy(a2y,b2y,c2y,d2dy2)
       
+      return
+      end
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine rhsxr(fc,rhs)
+      
+      ! RHS for the first derivative calculation in x direction
+      implicit none
+      include 'par.gv'
+      integer i, j
+      real*8 rhs(ptsx,jmax), fc(ptsx,jmax)
+
+      do j = 1, jmax
+        rhs(1,j)=(-74.d0*fc(1,j) + 16.d0*fc(2,j) +
+     &             72.d0*fc(3,j) - 16.d0*fc(4,j) +
+     &              2.d0*fc(5,j))/(24.d0*dx)
+        
+        rhs(2,j)=(-406.d0*fc(1,j)- 300.d0*fc(2,j) +
+     &             760.d0*fc(3,j)-  80.d0*fc(4,j) +
+     &              30.d0*fc(5,j)-   4.d0*fc(6,j))/(120.d0*dx)
+        
+        do i = 3, ptsx - 2
+          rhs(i,j)=(        fc(i+2,j)-fc(i-2,j) +
+     &               28.d0*(fc(i+1,j)-fc(i-1,j)) )/
+     &             (12.d0*dx)
+        end do
+        
+        rhs(ptsx-1,j)=(-406.d0*fc(ptsx,j)- 300.d0*fc(ptsx-1,j)+
+     &                 760.d0*fc(ptsx-2,j)-80.d0*fc(ptsx-3,j)+
+     &                  30.d0*fc(ptsx-4,j)- 4.d0*fc(ptsx-5,j))/
+     &                (-120.d0*dx)
+        
+        rhs(ptsx,j)=(-74.d0*fc(ptsx,j) +  16.d0*fc(ptsx-1,j) +
+     &                72.d0*fc(ptsx-2,j)- 16.d0*fc(ptsx-3,j) +
+     &                 2.d0*fc(ptsx-4,j))/(-24.d0*dx)
+      end do
+
       return
       end
 
@@ -370,6 +423,85 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine tridparxr(a,b,c,rhs)
+      
+      implicit none
+      include 'par.gv'
+      include 'comm.par'
+      include 'mpif.h'
+      integer status(MPI_status_size)
+      integer i, j, i_ini, i_fim
+      real*8 a(ptsx), b(ptsx), c(ptsx), aux(2*inter), rhs(ptsx,jmax),
+     &       u(ptsx,jmax), gam(ptsx), bet
+      
+      do j = 1, jmax
+        if (my_rank.eq.0) then
+          bet    = b(1)
+          u(1,j) = rhs(1,j) / bet
+          gam(2) = c(1) / bet
+          bet    = b(2) - a(2) * gam(2)
+          u(2,j) = (rhs(2,j) - a(2) * u(1,j)) / bet
+         else
+          call MPI_Recv(aux, 2*inter, MPI_double_precision, my_rank-1,
+     &                  57, MPI_COMM_WORLD, status, ierr)
+          do i = 1, inter
+            u(i,j) = aux(i)
+            gam(i) = aux(i+inter)
+          end do
+        end if
+        i_ini = inter
+        if (my_rank.eq.0) i_ini = 3
+        i_fim = ptsx - 2
+        if (my_rank.eq.numproc) i_fim = ptsx
+        
+        bet = b(i_ini-1) - a(i_ini-1) * gam(i_ini-1)
+        do i = i_ini, i_fim
+          gam(i) = c(i-1) / bet
+          bet    = b(i) - a(i) * gam(i)
+          u(i,j) = (rhs(i,j) - a(i) * u(i-1,j)) / bet
+        end do
+        
+        if (my_rank.lt.numproc) then
+          do i = 1, inter
+            aux(i)       = u(ptsx-inter+i-1,j)
+            aux(i+inter) = gam(ptsx-inter+i-1)
+          end do
+          call MPI_Send(aux, 2*inter, MPI_double_precision, my_rank+1,
+     &                  57, MPI_COMM_WORLD, ierr)
+        end if
+      end do
+      
+      do j = 1, jmax
+        if (my_rank.lt.numproc) then
+          call MPI_Recv(aux, 2*inter, MPI_double_precision, my_rank+1, 
+     &                  67, MPI_COMM_WORLD, status, ierr)
+          do i = 1, inter
+            u(ptsx-inter+i,j) = aux(i)
+            gam(ptsx-inter+i) = aux(i+inter)
+          end do
+        end if
+        
+        i_fim = ptsx - inter
+        if (my_rank.eq.numproc) i_fim = ptsx - 1
+        do i = i_fim, 1, -1
+          u(i,j) = u(i,j) - gam(i+1)*u(i+1,j)
+        end do
+        
+        if (my_rank.gt.0) then
+          do i = 1, inter
+            aux(i)       = u(i+1,j)
+            aux(i+inter) = gam(i+1)
+          end do
+          call MPI_Send(aux, 2*inter, MPI_double_precision, my_rank-1,
+     &                  67, MPI_COMM_WORLD, ierr)
+        end if
+        do i = 1, ptsx
+          rhs(i,j) = u(i,j)
+        end do
+      end do
+
+      return
+      endcccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       subroutine tridparx(a,b,c,rhs)
       
       ! solves tridiagonal matrix for the derivatives in x direction

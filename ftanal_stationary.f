@@ -195,7 +195,8 @@ c first derivatives calculation in x direction
       do f = 1, N / 2
         do i = 4, imax / 2 + 1 - 3
           ddx(i,f)=(-fc(i-3,f)+9.d0*fc(i-2,f)-45.d0*fc(i-1,f)+
-     &            45.d0*fc(i+1,f)-9.d0*fc(i+2,f)+fc(i+3,f))/(60.d0*dx)
+     &               45.d0*fc(i+1,f)-9.d0*fc(i+2,f)+fc(i+3,f))/
+     &             (60.d0*(2.d0*dx))
         end do
       end do
       

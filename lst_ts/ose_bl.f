@@ -8,7 +8,7 @@
       real*8 eta(jm), h(jm), hp(jm), y(jm), yp(jm), x, reout,
      &       wslope, etamax, bl, re0, w0, beta, w0in, betain, rein, 
      &       fpp(10000), dx, Re_dns, beta_dns, omega_dns, beta_fsin, 
-     &       betafs(10000), delta_re, beta_fs, wslopein, rea
+     &       betafs(10000), delta_re, beta_fs, wslopein, rea, posx
       common /data/ re, alfa, alfa0, freq, beta, re0, w0, beta_fs,
      &       /blas/ wslope, etamax,
      &       /cons/ z1, z2, z3, z4
@@ -27,7 +27,7 @@ c************************************************************************
       close (unit=1)
 
       open(2,file='datalst.dat',form='formatted')
-        read(2,*) Re_dns, omega_dns, beta_dns, imax, dx
+        read(2,*) Re_dns, omega_dns, beta_dns, imax, dx, posx
       close(unit=2)
 
       open(3,file='fpp.dat',form='formatted')
@@ -53,6 +53,8 @@ c************************************************************************
       end do
 
 ! loop para omega
+      ! correção para omega_dns no início do domínio
+c     omega_dns = omega_dns / dsqrt(1.d0+posx)
       do i = 1, 1000
          w0   = w0in + dble(i-1)*(omega_dns-w0in)/1000.d0
          call evalue (zeig,jmax,eta,yp)
@@ -92,7 +94,7 @@ c************************************************************************
         call evalue (zeig,jmax,eta,yp)
 c       call eigen (eta,y,h,hp,zeig,jmax,jedge)
         x       = (re0/rein)**2
-        write(*,*)i,x,re0,alfa0
+        write(*,*)x,re0,w0,alfa0
         write(1,3)x,-dimag(alfa0)*rein**2/re0
       end do
       close (unit=1)
