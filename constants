@@ -7,13 +7,17 @@
 
   ! General constants
   integer, parameter      :: my_form       = __MYFORM__
+  real(kind=8), parameter :: U_1           = __U1__
+  real(kind=8), parameter :: L_1           = __L1__
+  real(kind=8), parameter :: N_1           = __N1__
+  real(kind=8), parameter :: Re            = __RE__
+  real(kind=8), parameter :: fac_y         = __FAC_Y__
   integer, parameter      :: imax          = __IMAX__
   real(kind=8), parameter :: dx            = __DX__
   integer, parameter      :: jmax          = __JMAX__
   real(kind=8), parameter :: dy0           = __DY__
   real(kind=8), parameter :: stf           = __STF__
   real(kind=8), parameter :: x0            = __X0__
-  real(kind=8), parameter :: Re            = __RE__
   real(kind=8), parameter :: Pr            = __PR__
   integer, parameter      :: lvls          = __LVL__
 
@@ -21,7 +25,7 @@
   real(kind=8), parameter :: tol_fs        = 1.0d-13
   real(kind=8), parameter :: gtol_fs       = 1.0d-23
   real(kind=8), parameter :: etapp_guess   = 1.1d0
-  real(kind=8), parameter :: eta_zero      = .5d0
+  real(kind=8), parameter :: eta_zero      = 0.5d0
   real(kind=8), parameter :: eta_variation = 0.01d0
   real(kind=8), parameter :: deta          = 1.d-4
   real(kind=8)            :: beta_fs(imax)

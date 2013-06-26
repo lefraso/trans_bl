@@ -16,8 +16,8 @@
    integer                     :: j, cont, steps_eta
    real(kind=8)                :: f_eta(6), delta_fpp, ls_err
 
-   ls_err  = 1.d0
-   cont    = 1
+   ls_err = 1.d0
+   cont   = 1
 
    do while (dabs(ls_err).gt.gtol_fs.and.cont.lt.10000)
  
@@ -37,8 +37,8 @@
       call rk4(f_eta, deta, i)
      enddo
 
-     delta_fpp  = ( - f_eta(5) * f_eta(2) - ( f_eta(6) * f_eta(3) ) + f_eta(5) ) / ( f_eta(5)**2 + f_eta(6)**2 )
-     fpp        = fpp + delta_fpp
+     delta_fpp = ( - f_eta(5) * f_eta(2) - ( f_eta(6) * f_eta(3) ) + f_eta(5) ) / ( f_eta(5)**2 + f_eta(6)**2 )
+     fpp       = fpp + delta_fpp
 
     enddo
  
@@ -69,7 +69,7 @@
     xad      = x0 + dble(i-1) * dx
     ue       = xad ** m
     eta      = 0.d0
-    deta0    = dy0 * dsqrt(0.5d0 * Re * ue * (m + 1.d0) / xad)
+    deta0    = ( dy0 / dsqrt(fac_y) ) * dsqrt(0.5d0 * Re * ue * (m + 1.d0) / xad)
 
     f_eta(1) = 0.d0
     f_eta(2) = 0.d0
@@ -80,7 +80,8 @@
 
     ux(i,1)  = 0.d0
     uy(i,1)  = 0.d0
-    wz(i,1)  = ue * deta0 * f_eta(3) / dy0
+    wz(i,1)  = ue * deta0 * f_eta(3) / ( dy0 / dsqrt(fac_y) )
+    wz(i,1)  = wz(i,1) / dsqrt(fac_y)   ! adimensionalization
     th(i,1)  = 0.d0
 
     do j = 2, jmax
@@ -103,10 +104,12 @@
      ux(i,j) = ue * f_eta(2)
      uy(i,j) = - dsqrt( 0.5d0 * ue* ( m + 1.d0 ) / (xad * Re)) * f_eta(1) &
                - 0.5d0 * ( m - 1.d0 ) * yad * ue * f_eta(2) / xad
-     wz(i,j) = ue * dsqrt(0.5d0 * (m + 1.d0) * Re * ue / xad) * f_eta(3) !                                   &
+     uy(i,j) = uy(i,j) * dsqrt(fac_y)
+     wz(i,j) = ue * dsqrt(0.5d0 * (m + 1.d0) * Re * ue / xad) * f_eta(3) !                              &
 !            + 0.125d0 * (m - 1.d0)**2 * yad**2 * dsqrt(2.d0 * (m + 1.d0) / (Re * xad)) * f_eta(3) / xad**2  &
 !            + 0.25d0 * (3.d0 * m**2 - 4.d0 * m + 1.d0) * yad / (xad**2 * dsqrt(Re)) * f_eta(2)              &
 !            + 0.25d0 * (m - 1.d0) * dsqrt(2.d0 * (m + 1.d0) /(Re * xad**3)) * f_eta(1)
+     wz(i,j) = wz(i,j) / dsqrt(fac_y)   ! adimensionalization
      th(i,j) = f_eta(4)
     enddo
    enddo
@@ -208,18 +211,18 @@
    h6 = h / 6.d0
 
    call derivs(f_eta, dfd_eta, i)
-   f_etat   = f_eta + hh * dfd_eta
+   f_etat  = f_eta   + hh   * dfd_eta
 
    call derivs(f_etat, dfd_eta2, i) 
-   f_etat   = f_eta + hh * dfd_eta2
+   f_etat  = f_eta   + hh   * dfd_eta2
    dfd_eta = dfd_eta + 2.d0 * dfd_eta2
 
    call derivs(f_etat, dfd_eta2, i)
-   f_etat   = f_eta + h * dfd_eta2
+   f_etat  = f_eta   + h    * dfd_eta2
    dfd_eta = dfd_eta + 2.d0 * dfd_eta2
 
    call derivs(f_etat, dfd_eta2, i)
-   f_eta   = f_eta + h6 * ( dfd_eta + dfd_eta2 )
+   f_eta   = f_eta   + h6   * ( dfd_eta + dfd_eta2 )
 
   end subroutine rk4
 

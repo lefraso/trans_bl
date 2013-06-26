@@ -22,7 +22,7 @@
 
   open(2,file='../lst_ts/fpp.dat',form='formatted')
   do i = 1, imax
-    m = beta_fs(i)/(2.d0 - beta_fs(i))
+    m = beta_fs(i) / (2.d0 - beta_fs(i))
     write(2,*) fpp(i) * dsqrt((m+1.d0)/2.d0)
   end do
   close(unit=2)

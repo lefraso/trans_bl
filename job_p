@@ -1,52 +1,56 @@
-#PBS -N gv_beta_0
+#PBS -N form1_fac1
 #PBS -l nodes=1:ppn=8:dodeca
-#PBS -o /cluster/lefraso
-#PBS -e /cluster/lefraso
+#PBS -o /cluster/josuelkr
+#PBS -e /cluster/josuelkr
 
-echo "Nos reservados:"
-cat $PBS_NODEFILE
-sleep 5
-echo "Iniciando o daemon do MPD..."
-mpdboot -n 1 -f $PBS_NODEFILE
-sleep 5
-echo "Executando em cada no"
+ NP=8
 
-cd /temp
-rm -r lefraso
-mkdir -p lefraso
-cd lefraso
-cp -r /cluster/lefraso/trans_bl/* .
-sleep 5
+ echo "Nos reservados:"
+ cat $PBS_NODEFILE
+ sleep 5
+ echo "Iniciando o daemon do MPD..."
+ mpdboot -n 1 -f $PBS_NODEFILE
+ sleep 5
+ echo "Executando em cada no"
+ 
+ cd /temp
+ rm -r josuelkr
+ mkdir -p josuelkr
+ cd josuelkr
+ cp -r /cluster/josuelkr/curvatura/* .
+ sleep 5
 
-rm pre_processing/constants.f90
-./convert.pl
+ rm pre_processing/constants.f90
+ ./convert.pl
 
-cd pre_processing
-make clean
-make
-./coef
-make beta
-./beta
-make fs
+ cd pre_processing
+ make clean
+ make
+ ./coef
+ make beta
+ ./beta
+  make fs
 
-cd ../baseflow2D
-make clean
-make 
-mpiexec -np 8 ./basef >> saida_base
+#cd ../baseflow2D_curv
+#make clean
+#make 
+#mpiexec -np 8 ./basef >> saida_base
 
-gfortran format_base.f -o prg
-./prg 
+ cd ../baseflow2D
+ make clean
+ make 
+ mpiexec -np $NP ./basef >> saida_base
 
-cd ..
-rm *.o
-make
+ cd ..
+ rm *.o
+ make
 
-mpiexec -np 8 ./prog >> saida
+ mpiexec -np $NP ./prog >> saida
 
-sleep 5
-echo "Saindo do daemon do MPD..."
-mpdallexit
+ sleep 5
+ echo "Saindo do daemon do MPD..."
+ mpdallexit
 
-mkdir /cluster/lefraso/res_freq250_beta0_stf1
-cp -r * /cluster/lefraso/res_freq250_beta0_stf1/.
-echo "Sucesso!"
+ mkdir -p /cluster/josuelkr/ts/ts_ny_169_dir
+ cp -r *  /cluster/josuelkr/ts/ts_ny_169_dir/.
+ echo "Sucesso!"

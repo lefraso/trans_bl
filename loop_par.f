@@ -24,7 +24,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
             wx(i,j,k) = wx(i,j,k) * bdfc(bdt,i+shift)
             wy(i,j,k) = wy(i,j,k) * bdfc(bdt,i+shift)
             select case (my_form)
-             case(0)
+             case(0, 4)
               if (k.eq.1) then 
                 wz(i,j,k) = ( wz(i,j,k) - wzb(i,j) ) * bdfc(bdt,i+shift)
      &                    + wzb(i,j)
@@ -94,7 +94,7 @@ c         endif
 
 c         call banbky5(a,al,indx,rhs)
           select case (my_form)
-           case(0)
+           case(0, 4)
             if (k.eq.1) then 
               do j = 2, jmax
 c               uy(ptsx,j,k) = rhs(j)
@@ -158,8 +158,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       a(jmax,1) = lp_poi_coef(5,1)
       a(jmax,2) = lp_poi_coef(4,1)
       a(jmax,3) = lp_poi_coef(3,1) + v_k2b2(k) * dyya 
-     &          - lp_poi_coef(2,1) * dya * dsqrt(alpha * alpha
-     &          - v_k2b2(k))
+     &          - lp_poi_coef(2,1) * dya * dsqrt( (alpha * alpha
+     &          - v_k2b2(k)) / fac_y)
       a(jmax,4) = 0.d0
       a(jmax,5) = 0.d0
 
@@ -307,13 +307,13 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
 ! alterar esta aproximação com 7 pontos de 7a ordem para calculo do dwydy
       do i = 1, ptsx
-        dwydy(i) = ( 1.d0 / dy )* ( dwydy_coef(2) * wy(i,1,k)
-     &                            + dwydy_coef(3) * wy(i,2,k)
-     &                            + dwydy_coef(4) * wy(i,3,k)
-     &                            + dwydy_coef(5) * wy(i,4,k)
-     &                            + dwydy_coef(6) * wy(i,5,k)
-     &                            + dwydy_coef(7) * wy(i,6,k)
-     &                            + dwydy_coef(8) * wy(i,7,k) )
+        dwydy(i) = ( 1.d0 / dy ) * ( dwydy_coef(2) * wy(i,1,k)
+     &                             + dwydy_coef(3) * wy(i,2,k)
+     &                             + dwydy_coef(4) * wy(i,3,k)
+     &                             + dwydy_coef(5) * wy(i,4,k)
+     &                             + dwydy_coef(6) * wy(i,5,k)
+     &                             + dwydy_coef(7) * wy(i,6,k)
+     &                             + dwydy_coef(8) * wy(i,7,k) )
       end do
 
       d2wydxdy(1) = ( - 14.7d0 * dwydy(1) + 36.d0 * dwydy(2)
@@ -444,7 +444,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       i_ini = 1
       if (my_rank.eq.0) i_ini = 2
 
-      ! for the fundamental mode we use continuity equation
+      ! for the fundamental mode, the continuity equation is used
       k = 1
       do j = 2, jmax - 1
         if (my_rank.gt.0) then
@@ -581,7 +581,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       i_ini = 1
       if (my_rank.eq.0) i_ini = 2
 
-      ! for the fundamental mode we use vorticity equation
+      ! for the fundamental mode, the vorticity equation is used
       k = 1
       do j = 2, jmax
         if (my_rank.gt.0) then
@@ -704,7 +704,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           wx(i,1,k) = wx(i,1,k) * bdfc(bdt,i+shift)
           wy(i,1,k) = wy(i,1,k) * bdfc(bdt,i+shift)
           select case (my_form)
-           case(0)
+           case(0, 4)
             if (k.eq.1) then 
               wz(i,1,k) = ( wz(i,1,k) - wzb(i,1) ) * bdfc(bdt,i+shift)
      &                  + wzb(i,1)

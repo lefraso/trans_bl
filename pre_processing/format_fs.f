@@ -23,7 +23,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         open (3, file = 'base_fs.dat',status = 'unknown')
         write(3,*) 'VARIABLES="x","y","velu","vely","vortz","theta"'
         write(3,*) 'ZONE I=',imax,', J=',jmax,', F=POINT'
-        
+
         do j = 1, jmax
           if(stf.eq.1.d0) then
            y = dble(j-1) * dy

@@ -153,7 +153,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
             do i = i_ini, ptsx
               wz1(i,j) = wz(i,j)
               th1(i,j) = th(i,j)
-              wz(i,j)  = wz1(i,j) + dv1(i,j) * dt_base
+              wz(i,j)  = wz1(i,j) + dv1(i,j)  * dt_base
               th(i,j)  = th1(i,j) + dvt1(i,j) * dt_base
             end do
           end do
@@ -162,7 +162,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           call drv_theta(dv1, dvt1)
           do j = 2, jmax
             do i = i_ini, ptsx
-              wz(i,j)  = wz1(i,j) + dv1(i,j) * dt_base
+              wz(i,j)  = wz1(i,j) + dv1(i,j)  * dt_base
               th(i,j)  = th1(i,j) + dvt1(i,j) * dt_base
             end do
           end do
@@ -222,7 +222,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       integer i, j
       real*8 m, stf_verif, dv1(ptsx,jmax), wz1(ptsx,jmax),
      &       uxbt(imax,jmax), uybt(imax,jmax), wzbt(imax,jmax), xad,
-     &       dwzdx(ptsx,jmax), ue, afil(ptsx), bfil(ptsx), cfil(ptsx)
+     &       dwzdx(ptsx,jmax), ue, afil(ptsx), bfil(ptsx), cfil(ptsx),
+     &       ueptsx(ptsx)
       common/dwdx/ dwzdx
       common/filt/ afil, bfil, cfil
 
@@ -243,6 +244,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       open(1,file='../pre_processing/base_fs.bin',form='unformatted')
       read(1) uxbt, uybt, wzbt
       close(unit=1)
+
       ! gives the values of the boundary layer profile for each node
       do j = 1, jmax
         do i = 1, ptsx
@@ -250,24 +252,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           uy(i,j) = uybt(i+shift,j)
           wz(i,j) = wzbt(i+shift,j)
         end do
-      end do
-
-      ! reads beta_fs from a file
-      open(1,file='../beta_fs.dist',form='formatted')
-      read(1,*) beta_fs
-      close(unit=1)
-
-      if (my_rank.eq.0) then
-        ue = ux(1,jmax)
-      end if
-      call MPI_BCAST(ue, 1, mpi_double_precision, 0, mpi_comm_world,
-     &               ierr)
-!     m = beta_fs / (2.d0 - beta_fs)
-      do i = 1, ptsx
-        xad = dble(i+shift-1)*dx + x0
-        m   = beta_fs(i+shift-1) / (2.d0 - beta_fs(i+shift-1))
-        ux(i,jmax) = ue * xad**m
-        duexmdx(i) = ue * m * xad**(m - 1.d0)
       end do
 
       ! reads the derivative and Poisson coefficients
@@ -296,6 +280,26 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! mounts the lhs for the derivative calculation
       call derivs_k
+
+      ! defines boundary layer parameters
+      ! reads beta_fs from a file
+      open(1,file='../beta_fs.dist',form='formatted')
+      read(1,*) beta_fs
+      close(unit=1)
+
+      if (my_rank.eq.0) then
+        ue = ux(1,jmax)
+      end if
+      call MPI_BCAST(ue, 1, mpi_double_precision, 0, mpi_comm_world,
+     &               ierr)
+      do i = 1, ptsx
+        xad        = dble(i+shift-1)*dx + x0
+        m          = beta_fs(i+shift) / (2.d0 - beta_fs(i+shift))
+        ux(i,jmax) = ue * xad**m
+        ueptsx(i)  = ux(i,jmax)
+      end do
+      call derparxue(duexmdx,ueptsx)
+      ! defines boundary layer parameters
 
       call create_ctes
 
@@ -343,6 +347,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       open(1,file='../pre_processing/base_fs.bin',form='unformatted')
       read(1) uxbt, uybt, wzbt, thbt
       close(unit=1)
+
       ! gives the values of the boundary layer profile for each node
       do j = 1, jmax
         do i = 1, ptsx
@@ -358,15 +363,15 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       read(1,*) beta_fs
       close(unit=1)
 
+      ! defines boundary layer parameters
       if (my_rank.eq.0) then
         ue = ux(1,jmax)
       end if
       call MPI_BCAST(ue, 1, mpi_double_precision, 0, mpi_comm_world,
      &               ierr)
-!     m = beta_fs / (2.d0 - beta_fs)
       do i = 1, ptsx
-        xad = dble(i+shift-1)*dx + x0
-        m   = beta_fs(i+shift-1) / (2.d0 - beta_fs(i+shift-1))
+        xad        = dble(i+shift-1)*dx + x0
+        m          = beta_fs(i+shift) / (2.d0 - beta_fs(i+shift))
         ux(i,jmax) = ue * xad**m
         duexmdx(i) = ue * m * xad**(m - 1.d0)
       end do
@@ -432,7 +437,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       do j = 2, jmax
         do i = 1, ptsx
           dv(i,j) = - duwzdx(i,j) - dvwzdy(i,j)
-     &              + ( d2wzdx2(i,j) + d2wzdy2(i,j) ) / Re
+     &              + ( d2wzdx2(i,j) + d2wzdy2(i,j) * fac_y ) / Re
         end do
       end do
 

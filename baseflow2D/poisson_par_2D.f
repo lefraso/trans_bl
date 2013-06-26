@@ -78,10 +78,10 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       call get_max_value(fct, err)
 
       if (my_rank.gt.0) then
-        ! Send the error to the node 1
+        ! send the error to the node 1
         call MPI_Send(err,1, MPI_DOUBLE_PRECISION, 0, 51,
      &                MPI_COMM_WORLD, ierr)
-        ! Receive answer if continues or not
+        ! receive answer if continues or not
         call MPI_Recv(continua, 1, MPI_LOGICAL, 0, 71,
      &                MPI_COMM_WORLD, status, ierr)
        else
@@ -118,7 +118,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &       dwzdx(ptsx,jmax), dya
       common/dwdx/ dwzdx
 
-      ! Source term of the Poisson Equation
+      ! source term of the Poisson Equation
       do i = 1, ptsx
         ! weight near the boundaries
         sc(i,1,1) = 0.d0
@@ -134,7 +134,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         sc(i,jmax-1,1) = - dwzdx(i,jmax-1)
         dya = dy * stf**(jmax-3)
         sc(i,jmax,1) = - lp_poi_coef(1,1) * dwzdx(i,jmax)
-     &                 + lp_poi_coef(2,1) * duexmdx(i)/ dya
+     &                 + lp_poi_coef(2,1) * duexmdx(i) / dya
       end do
 
       ! function of the Poisson equation
@@ -220,7 +220,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       integer j, mesh
       real*8 a(jmax,5), qx
 
-      qx = - 30.d0 / ( 12.d0 * v_dx2(mesh) )
+      qx = - 30.d0 / ( 12.d0 * v_dx2(mesh) * fac_y )
 
       a(1,1) = 0.d0
       a(1,2) = 0.d0
@@ -275,7 +275,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       integer j, mesh
       real*8 a(jmax,5), qx
 
-      qx = - 15.d0  / ( 12.d0 * v_dx2(mesh) )
+      qx = - 15.d0  / ( 12.d0 * v_dx2(mesh) * fac_y )
 
       a(1,1) = 0.d0
       a(1,2) = 0.d0
@@ -331,7 +331,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       integer i, j, mesh
       real*8 qx, rhs(jmax), fc(ptsx,jmax,msh), sc(ptsx,jmax,msh)
 
-      qx = 1.d0 / ( 12.d0 *  v_dx2(mesh) )
+      qx = 1.d0 / ( 12.d0 *  v_dx2(mesh) * fac_y )
 
       rhs(1) = fc(i,1,mesh)
 
@@ -400,7 +400,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       integer i, j, mesh
       real*8 qx, rhs(jmax), fc(ptsx,jmax,msh), sc(ptsx,jmax,msh)
 
-      qx = 1.d0 / ( 12.d0 * v_dx2(mesh) )
+      qx = 1.d0 / ( 12.d0 * v_dx2(mesh) * fac_y )
  
       rhs(1) = fc(i,1,mesh)
 
@@ -469,7 +469,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       integer i, j, mesh
       real*8 qx, rhs(jmax), fc(ptsx,jmax,msh), sc(ptsx,jmax,msh)
       
-      qx = 1.d0 / ( 12.d0 * v_dx2(mesh) )
+      qx = 1.d0 / ( 12.d0 * v_dx2(mesh) * fac_y )
 
       rhs(1) = fc(i,1,mesh)
 
@@ -549,8 +549,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &      + sp_poi_coef(5,mesh) * fc(i,j,mesh)
      &      + sp_poi_coef(6,mesh) * fc(i,j+1,mesh)
      &      + sp_poi_coef(7,mesh) * fc(i,j+2,mesh)
-        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh))
-     &               + c * v_qdy2(1,mesh) )
+        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh) *
+     &               fac_y) + c * v_qdy2(1,mesh) )
         ! middle of the second column ( i = 2, 3>=j>=nptsy-2 )
         do j = 3, v_ptsy(mesh) - 2
           b = (cp_poi_coef(1,mesh) *
@@ -570,8 +570,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &         + cp_poi_coef(6,mesh) * fc(i,j,mesh)
      &         + cp_poi_coef(7,mesh) * fc(i,j+1,mesh)
      &         + cp_poi_coef(8,mesh) * fc(i,j+2,mesh) )
-          fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh))
-     &                 + c * v_qdy2(j-2,mesh)  )
+          fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh) *
+     &                 fac_y) + c * v_qdy2(j-2,mesh)  )
         end do
         ! point ( i = 2, j = nptsy - 1 )
         j = v_ptsy(mesh) - 1
@@ -581,8 +581,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         c = pp_poi_coef(4,mesh) * fc(i,j+1,mesh)
      &    + pp_poi_coef(3,mesh) * fc(i,j,mesh)
      &    + pp_poi_coef(2,mesh) * fc(i,j-1,mesh)
-        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh))
-     &               + c * v_qdy2(j-1,mesh)  )
+        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh) *
+     &               fac_y) + c * v_qdy2(j-1,mesh)  )
         ! point ( i = 2, j = nptsy )
         j = v_ptsy(mesh)
         b = ( 10.d0 * fc(i-1,j,mesh) - 15.d0 * fc(i,j,mesh)
@@ -591,8 +591,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         c = lp_poi_coef(3,mesh) * fc(i,j,mesh)
      &    + lp_poi_coef(4,mesh) * fc(i,j-1,mesh)
      &    + lp_poi_coef(5,mesh) * fc(i,j-2,mesh)
-        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh))
-     &               + c * v_qdy2(j-2,mesh) )
+        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh) *
+     &               fac_y) + c * v_qdy2(j-2,mesh) )
       end if
 
       if (my_rank.eq.numproc) then
@@ -611,8 +611,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &    + sp_poi_coef(5,mesh) * fc(i,j,mesh)
      &    + sp_poi_coef(6,mesh) * fc(i,j+1,mesh)
      &    + sp_poi_coef(7,mesh) * fc(i,j+2,mesh)
-        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh))
-     &               + c * v_qdy2(1,mesh)  )
+        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh) *
+     &               fac_y) + c * v_qdy2(1,mesh)  )
         ! middle of the last but one column ( i = nptsx - 1, 3>=j>=nptsy-2 )
         do j = 3, v_ptsy(mesh) - 2
           b =  cp_poi_coef(1,mesh) *
@@ -632,8 +632,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &      + cp_poi_coef(6,mesh) * fc(i,j,mesh)
      &      + cp_poi_coef(7,mesh) * fc(i,j+1,mesh)
      &      + cp_poi_coef(8,mesh) * fc(i,j+2,mesh)
-          fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh))
-     &                 + c * v_qdy2(j-2,mesh)  )
+          fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh) *
+     &                 fac_y) + c * v_qdy2(j-2,mesh)  )
         end do
         ! point ( i = nptsx - 1, j = nptsy - 1 )
         j = v_ptsy(mesh) - 1
@@ -643,8 +643,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         c =  pp_poi_coef(4,mesh) * fc(i,j+1,mesh)
      &     + pp_poi_coef(3,mesh) * fc(i,j,mesh)
      &     + pp_poi_coef(2,mesh) * fc(i,j-1,mesh)
-        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh))
-     &               + c * v_qdy2(j-1,mesh)  )
+        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh) *
+     &               fac_y) + c * v_qdy2(j-1,mesh)  )
         ! point ( i = nptsx - 1, j = nptsy )
         j = v_ptsy(mesh)
         b = ( 10.d0 * fc(i+1,j,mesh) - 15.d0 * fc(i,j,mesh)
@@ -653,8 +653,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         c = ( lp_poi_coef(3,mesh) * fc(i,j,mesh)
      &      + lp_poi_coef(4,mesh) * fc(i,j-1,mesh)
      &      + lp_poi_coef(5,mesh) * fc(i,j-2,mesh))
-        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh))
-     &               + c * v_qdy2(j-2,mesh) )
+        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh) *
+     &               fac_y) + c * v_qdy2(j-2,mesh) )
       end if
 
       ! middle region en x
@@ -677,8 +677,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &     + sp_poi_coef(5,mesh) * fc(i,j,mesh)
      &     + sp_poi_coef(6,mesh) * fc(i,j+1,mesh)
      &     + sp_poi_coef(7,mesh) * fc(i,j+2,mesh)
-        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh))
-     &               + c * v_qdy2(1,mesh)  )
+        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh) *
+     &               fac_y) + c * v_qdy2(1,mesh)  )
         ! middle region
         do j = 3, v_ptsy(mesh) - 2
           b = ( cp_poi_coef(1,mesh) * (
@@ -704,8 +704,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &      + cp_poi_coef(6,mesh) * fc(i,j,mesh)
      &      + cp_poi_coef(7,mesh) * fc(i,j+1,mesh)
      &      + cp_poi_coef(8,mesh) * fc(i,j+2,mesh)
-          fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh))
-     &                 + c * v_qdy2(j-2,mesh)  )
+          fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh) *
+     &                 fac_y) + c * v_qdy2(j-2,mesh)  )
         end do
         ! last but one line ( j = nptsy-1, 3>=i>=nptsx-2 )
         j = v_ptsy(mesh) - 1
@@ -715,8 +715,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         c = pp_poi_coef(4,mesh) * fc(i,j+1,mesh)
      &    + pp_poi_coef(3,mesh) * fc(i,j,mesh)
      &    + pp_poi_coef(2,mesh) * fc(i,j-1,mesh)
-        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh))
-     &               + c * v_qdy2(j-1,mesh)  )
+        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh) *
+     &               fac_y) + c * v_qdy2(j-1,mesh)  )
         ! last line ( j = nptsy, 3>=i>=nptsx-2 )
         j = v_ptsy(mesh)
         b = ( -  1.d0 * ( fc(i-2,j,mesh) + fc(i+2,j,mesh) )
@@ -725,8 +725,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         c = ( lp_poi_coef(3,mesh)*fc(i,j,mesh)
      &      + lp_poi_coef(4,mesh)*fc(i,j-1,mesh)
      &      + lp_poi_coef(5,mesh)*fc(i,j-2,mesh) )
-        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh))
-     &               + c * v_qdy2(j-2,mesh) )
+        fct(i,j,1) = sc(i,j,mesh) + si * ( b / (12.d0 * v_dx2(mesh) *
+     &               fac_y) + c * v_qdy2(j-2,mesh) )
       end do
 
       if (si.lt.0) return

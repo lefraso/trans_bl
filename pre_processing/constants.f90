@@ -6,14 +6,18 @@
   implicit none
 
   ! General constants
-  integer, parameter      :: my_form       = 0
-  integer, parameter      :: imax          = 665
-  real(kind=8), parameter :: dx            = 6.25d-3
-  integer, parameter      :: jmax          = 121
-  real(kind=8), parameter :: dy0           = 5.d-4
+  integer, parameter      :: my_form       = 1
+  real(kind=8), parameter :: U_1           = 27.935d0
+  real(kind=8), parameter :: L_1           = 0.18d0
+  real(kind=8), parameter :: N_1           = 1.56d-5
+  real(kind=8), parameter :: Re            = U_1*L_1/N_1
+  real(kind=8), parameter :: fac_y         = 1.d0
+  integer, parameter      :: imax          = 473
+  real(kind=8), parameter :: dx            = 0.008d0
+  integer, parameter      :: jmax          = 177
+  real(kind=8), parameter :: dy0           = 1.8d-4*dsqrt(fac_y)
   real(kind=8), parameter :: stf           = 1.01d0
   real(kind=8), parameter :: x0            = 1.d0
-  real(kind=8), parameter :: Re            = 3.65d5
   real(kind=8), parameter :: Pr            = 0.72d0
   integer, parameter      :: lvls          = 4
 
@@ -21,7 +25,7 @@
   real(kind=8), parameter :: tol_fs        = 1.0d-13
   real(kind=8), parameter :: gtol_fs       = 1.0d-23
   real(kind=8), parameter :: etapp_guess   = 1.1d0
-  real(kind=8), parameter :: eta_zero      = .5d0
+  real(kind=8), parameter :: eta_zero      = 0.5d0
   real(kind=8), parameter :: eta_variation = 0.01d0
   real(kind=8), parameter :: deta          = 1.d-4
   real(kind=8)            :: beta_fs(imax)

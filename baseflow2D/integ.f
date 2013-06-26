@@ -1,59 +1,89 @@
-      program integ 10072002
+      program integ 20121123
 
       ! this program reads the output of fs_bound.f and calculates the
       ! values of displacement thickness (alfa1), momentum thickness (alfa2)
       ! and calculates the H12=alfa1/alfa2
       implicit none
       include '../par.for'
-      integer i, j, jmaxh
-      real*8 delta1(imax), delta2(imax), H12(imax), fc1, fc2, umax, 
-     &       dya, ux(imax,jmax), uy(imax,jmax), wz(imax,jmax)
+      integer i, j
+      real*8 delta1(imax), delta2(imax), H12(imax), fc1, fc2, umax,
+     &       ux(imax,jmax), uy(imax,jmax), wz(imax,jmax), y(jmax),
+     &       a, b, c, det, var1(imax,jmax), var2(imax,jmax), x
       
-      dya = dy * dsqrt(Re)
+      do j = 1, jmax
+        if (stf .ne. 1.d0) then 
+         y(j) = dy * (stf**(j-1)-1.d0) / (stf-1.d0)
+        else
+         y(j) = dy * dble(j-1)
+        endif        
+      enddo
 
-      open(1,file='baseflow.bin',form='unformatted')
+      open(1,file='basens.bin',form='unformatted')
       read(1) ux, uy, wz
       close(unit=1)
       
-      fc1 = 0.d0
-      fc2 = 0.d0
-      jmaxh = jmax
-
       do i = 1, imax
         umax = ux(i,jmax)
-        fc1  = 3.d0 * (umax-ux(i,1)) / 8.d0
-        fc1  = fc1 + 7.d0 * (umax-ux(i,2)) / 6.d0
-        fc1  = fc1 + 23.d0 * (umax-ux(i,3)) / 24.d0
-        fc2  = 3.d0 * ux(i,1) * (umax-ux(i,1)) / 8.d0
-        fc2  = fc2 + 7.d0 * ux(i,2) * (umax-ux(i,2)) / 6.d0
-        fc2  = fc2 + 23.d0 * ux(i,3) * (umax-ux(i,3)) / 24.d0
-        do j = 4, jmaxh - 3
-          fc1 = fc1 + umax - ux(i,j)
-          fc2 = fc2 + ux(i,j) * ( umax-ux(i,j) )
+        do j = 1, jmax
+          var1(i,j) = 1.d0 - ux(i,j) / umax
+          var2(i,j) = ux(i,j) / umax * (1.d0 - ux(i,j) / umax)
         end do
-        fc1       = fc1 + 23.d0 * (umax - ux(i,jmaxh-2)) / 24.d0
-        fc1       = fc1 +  7.d0 * (umax - ux(i,jmaxh-1)) / 6.d0
-        fc1       = fc1 +  3.d0 * (umax - ux(i,jmaxh)) / 8.d0
-        fc2       = fc2 + 23.d0 * 
-     &              ux(i,jmaxh-2) * (umax-ux(i,jmaxh-2)) / 24.d0
-        fc2       = fc2 +  7.d0 * 
-     &              ux(i,jmaxh-1) * (umax-ux(i,jmaxh-1)) / 6.d0
-        fc2       = fc2 +  3.d0 * 
-     &              ux(i,jmaxh) * (umax-ux(i,jmaxh)) / 8.d0
-        delta1(i) = dya * fc1
-        delta2(i) = dya * fc2 / umax
+      end do
+
+      do i = 1, imax
+        fc1 = 0.d0
+        fc2 = 0.d0
+        do j = 2, jmax - 1, 2
+          det = y(j-1)**2 * ( y(j) - y(j+1) )                      
+     &        + y(j-1) * ( y(j+1)**2 - y(j)**2)               
+     &        + y(j) * y(j+1) * ( y(j)-y(j+1) ) 
+          a   = (1.d0 / det) * ( var1(i,j-1) * (y(j)   - y(j+1))
+     &                         + var1(i,j)   * (y(j+1) - y(j-1))
+     &                         + var1(i,j+1) * (y(j-1) - y(j)))
+          b   = (1.d0 / det) * ( var1(i,j-1) * (y(j+1)**2 - y(j)**2)
+     &                         + var1(i,j)   * (y(j-1)**2 - y(j+1)**2)
+     &                         - var1(i,j+1) * (y(j-1)**2 - y(j)**2))
+          c   = (1.d0 / det) * ( var1(i,j-1) *
+     &                           y(j)  * y(j+1) * (y(j)   - y(j+1))
+     &                         + var1(i,j)   *
+     &                           y(j-1)* y(j+1) * (y(j+1) - y(j-1))
+     &                         + var1(i,j+1) *
+     &                           y(j)  * y(j-1) * (y(j-1) - y(j)))
+          fc1 = fc1 + (a / 3.d0) * (y(j+1)**3 - y(j-1)**3) + 
+     &                (b / 2.d0) * (y(j+1)**2 - y(j-1)**2) + 
+     &                 c         * (y(j+1)    - y(j-1))
+
+          a   = (1.d0 / det) * ( var2(i,j-1) * (y(j)   - y(j+1))
+     &                         + var2(i,j)   * (y(j+1) - y(j-1))
+     &                         + var2(i,j+1) * (y(j-1) - y(j)))
+          b   = (1.d0 / det) * ( var2(i,j-1) * (y(j+1)**2 - y(j)**2)
+     &                         + var2(i,j)   * (y(j-1)**2 - y(j+1)**2)
+     &                         - var2(i,j+1) * (y(j-1)**2 - y(j)**2))
+          c   = (1.d0 / det) * ( var2(i,j-1) *
+     &                           y(j)  * y(j+1) * (y(j)   - y(j+1))
+     &                         + var2(i,j)   *
+     &                           y(j-1)* y(j+1) * (y(j+1) - y(j-1))
+     &                         + var2(i,j+1) *
+     &                           y(j)  * y(j-1) * (y(j-1) - y(j)))
+          fc2 = fc2 + (a / 3.d0) * (y(j+1)**3 - y(j-1)**3) + 
+     &                (b / 2.d0) * (y(j+1)**2 - y(j-1)**2) + 
+     &                 c         * (y(j+1)    - y(j-1))
+        end do
+        delta1(i) = fc1 / dsqrt(fac_y)
+        delta2(i) = fc2 / dsqrt(fac_y)
         H12(i)    = delta1(i) / delta2(i)
       end do
 
       open (1, file = 'H12.dat',status = 'unknown')
-      write(1,*) 'VARIABLES="i","delta1","delta2","H12"'
+      write(1,*) 'VARIABLES="x","delta1","delta2","H12"'
       write(1,*) 'ZONE I=',imax,',  F=POINT'
       write(*,*) ' The results are stored in the file H12.dat' 
       do i = 1, imax
-        write(1,5) dble(i), delta1(i), delta2(i), H12(i)
+        x = (dble(i-1) * dx + x0)
+        write(1,5) x, delta1(i), delta2(i), H12(i)
       end do
       close (unit=1)
  
-    5 format(1x,1f8.2,3d25.17)
+    5 format(1x,4d25.17)
       return
       end

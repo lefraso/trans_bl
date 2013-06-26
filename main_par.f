@@ -3,7 +3,7 @@ c                                                                c
 c                main subroutines                                c
 c                                                                c
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      program rugosidade_20120529
+      program trans_bl_20130503
 
       implicit none
       include 'par.for'
@@ -234,11 +234,18 @@ c           call ts3d_pert(t, 1.d0)
      &                    + dt6 * ( dv1y(i,j,k) + dv2y(i,j,k) )
                 wz(i,j,k) = wz1(i,j,k)
      &                    + dt6 * ( dv1z(i,j,k) + dv2z(i,j,k) )
+      !!!!!! filtro para eliminação das oscilações de Gibbs
+c               wx(i,j,k) =  wx1(i,j,k) + gibbs(k)
+c    &                    *  dt6 * ( dv1x(i,j,k) + dv2x(i,j,k) )
+c               wy(i,j,k) =  wy1(i,j,k) + gibbs(k)
+c    &                    *  dt6 * ( dv1y(i,j,k) + dv2y(i,j,k) )
+c               wz(i,j,k) =  wz1(i,j,k) + gibbs(k)
+c    &                    *  dt6 * ( dv1z(i,j,k) + dv2z(i,j,k) )
               end do
             end do
           end do
           call loop(1d-6)
-        
+
           write(*,*)my_rank, t, ux(ptsx,jmax/2,2)
           if (mod(t,stpp).eq.0) call escreve(t)
         
@@ -255,8 +262,8 @@ c           call ts3d_pert(t, 1.d0)
         
         fanal = stpp / 16
         
-c       do t = t0, tt + 15 * fanal
-        do t = t0, tt
+        do t = t0, tt + 15 * fanal
+c       do t = t0, tt
         
           ! first Runge-Kutta step
           call drv_gv(dv1x, dv1y, dv1z)
@@ -274,8 +281,8 @@ c       do t = t0, tt + 15 * fanal
           end do
           ! disturbance introductions
           if (my_rank.eq.0) then
-            call gv_pert(t)
-c           call ts2d_pert(t, 0.5d0)
+c           call gv_pert(t)
+            call ts2d_pert(t, 0.5d0)
 c           call ts3d_pert(t, 0.5d0)
           end if
           call loop(1d-5)
@@ -312,8 +319,8 @@ c           call ts3d_pert(t, 0.5d0)
           end do
           ! disturbance introductions
           if (my_rank.eq.0) then
-            call gv_pert(t)
-c           call ts2d_pert(t, 1.d0)
+c           call gv_pert(t)
+            call ts2d_pert(t, 1.d0)
 c           call ts3d_pert(t, 1.d0)
           end if
           call loop(1d-5)
@@ -370,8 +377,8 @@ c       do t = t0, tt
           end do
           ! disturbance introductions
           if (my_rank.eq.0) then
-            call gv_pert(t)
-c           call ts2d_pert(t, 0.5d0)
+c           call gv_pert(t)
+            call ts2d_pert(t, 0.5d0)
 c           call ts3d_pert(t, 0.5d0)
           end if
           call loop(1d-5)
@@ -412,8 +419,8 @@ c           call ts3d_pert(t, 0.5d0)
           end do
           ! disturbance introductions
           if (my_rank.eq.0) then
-            call gv_pert(t)
-c           call ts2d_pert(t, 1.d0)
+c           call gv_pert(t)
+            call ts2d_pert(t, 1.d0)
 c           call ts3d_pert(t, 1.d0)
           end if
           call loop(1d-5)
@@ -442,6 +449,99 @@ c           call ts3d_pert(t, 1.d0)
           if(t.ge.tt) call escreve2(t,fanal)
         
         end do
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!! CASE 4 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+       case(4)
+         call init_fi(dv1x, dv2x, dv1y, dv2y, dv1z, dv2z, wx1, wy1, 
+     &                wz1, dt2, dt6, t0)
+        
+        fanal = stpp / 16
+        
+        do t = t0, tt + 15 * fanal
+c       do t = t0, tt
+        
+          ! first Runge-Kutta step
+          call drv_les(dv1x, dv1y, dv1z)
+          do k = 1, kfour
+            do j = 2, jmax - 1
+              do i = i_ini, ptsx
+                wx1(i,j,k) = wx(i,j,k)
+                wy1(i,j,k) = wy(i,j,k)
+                wz1(i,j,k) = wz(i,j,k)
+                wx(i,j,k)  = wx1(i,j,k) + dv1x(i,j,k) * dt2
+                wy(i,j,k)  = wy1(i,j,k) + dv1y(i,j,k) * dt2
+                wz(i,j,k)  = wz1(i,j,k) + dv1z(i,j,k) * dt2
+              end do
+            end do
+          end do
+          ! disturbance introductions
+          if (my_rank.eq.0) then
+            call ts2d_pert(t, 0.5d0)
+c           call ts3d_pert(t, 0.5d0)
+          end if
+          call loop(1d-5)
+        
+          ! second Runge-Kutta step
+          call drv_les(dv2x, dv2y, dv2z)
+          do k = 1, kfour
+            do j = 2, jmax - 1
+              do i = i_ini, ptsx
+                wx(i,j,k)   = wx1(i,j,k) + dv2x(i,j,k) * dt2
+                wy(i,j,k)   = wy1(i,j,k) + dv2y(i,j,k) * dt2
+                wz(i,j,k)   = wz1(i,j,k) + dv2z(i,j,k) * dt2
+                dv1x(i,j,k) = dv1x(i,j,k) + 2.d0 * dv2x(i,j,k)
+                dv1y(i,j,k) = dv1y(i,j,k) + 2.d0 * dv2y(i,j,k)
+                dv1z(i,j,k) = dv1z(i,j,k) + 2.d0 * dv2z(i,j,k)
+              end do
+            end do
+          end do
+          call loop(1d-5)
+        
+          ! third Runge-Kutta step
+          call drv_les(dv2x, dv2y, dv2z)
+          do k = 1, kfour
+            do j = 2, jmax - 1
+              do i = i_ini, ptsx
+                wx(i,j,k)   = wx1(i,j,k) + dv2x(i,j,k) * dt
+                wy(i,j,k)   = wy1(i,j,k) + dv2y(i,j,k) * dt
+                wz(i,j,k)   = wz1(i,j,k) + dv2z(i,j,k) * dt
+                dv1x(i,j,k) = dv1x(i,j,k) + 2.d0 * dv2x(i,j,k)
+                dv1y(i,j,k) = dv1y(i,j,k) + 2.d0 * dv2y(i,j,k)
+                dv1z(i,j,k) = dv1z(i,j,k) + 2.d0 * dv2z(i,j,k)
+              end do
+            end do
+          end do
+          ! disturbance introductions
+          if (my_rank.eq.0) then
+            call ts2d_pert(t, 1.d0)
+c           call ts3d_pert(t, 1.d0)
+          end if
+          call loop(1d-5)
+        
+          ! fourth Runge-Kutta step
+          call drv_les(dv2x, dv2y, dv2z)
+          do k = 1, kfour
+            do j = 2, jmax - 1
+              do i = i_ini, ptsx
+                wx(i,j,k) = wx1(i,j,k)
+     &                    + dt6 * ( dv1x(i,j,k) + dv2x(i,j,k) )
+                wy(i,j,k) = wy1(i,j,k)
+     &                    + dt6 * ( dv1y(i,j,k) + dv2y(i,j,k) )
+                wz(i,j,k) = wz1(i,j,k)
+     &                    + dt6 * ( dv1z(i,j,k) + dv2z(i,j,k) )
+              end do
+            end do
+          end do
+          call loop(1d-6)
+        
+          write(*,*)my_rank, t, ux(ptsx,jmax/2,2)
+          if (mod(t,stpp).eq.0) call escreve(t)
+        
+          if(t.ge.tt) call escreve2(t,fanal)
+        
+        end do
+
       end select
 
       return
@@ -460,14 +560,12 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       include 'comm.multi'
       include 'mpif.h'
       include 'comm.fs'
-      character c1
-      character*2 c2
-      character*11 nome
+      character*23 nome
       integer i, j, k, t0
       real*8 dt2, dt6, a(imax,5), luf(imax,5), bdfc(2,imax), ep,
-     &       uxbt(imax,jmax), uybt(imax,jmax), wzbt(imax,jmax),
-     &       uxb(ptsx,jmax), uyb(ptsx,jmax), wzb(ptsx,jmax), xad,
-     &       afil(ptsx), bfil(ptsx), cfil(ptsx), stf_v, beta_fs_v, m
+     &       uxb(ptsx,jmax), uyb(ptsx,jmax), wzb(ptsx,jmax),
+     &       afil(ptsx), bfil(ptsx), cfil(ptsx), stf_v, beta_fs_v,
+     &       ueptsx(ptsx)
       complex*16 dv1x(ptsx,jmax,kfour), dv2x(ptsx,jmax,kfour),
      &           dv1y(ptsx,jmax,kfour), dv2y(ptsx,jmax,kfour),
      &           dv1z(ptsx,jmax,kfour), dv2z(ptsx,jmax,kfour),
@@ -493,6 +591,9 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! x function of the disturbance strip for TS disturbances
       call var_ts
+
+!!    Gibbs filter for filtering Fourier functions
+      call gibbs_function
 
       ! calculates the delta function for the immersed boundary method
       call delta
@@ -525,32 +626,20 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end do
 
       ! reads the boundary layer profile
-      open(1,file='baseflow2D/basens.bin',form='unformatted')
-      read(1) uxbt, uybt, wzbt
+      write(nome,'(a,i0.2,a)')'baseflow2D/based_',my_rank,'.bin'
+      open (1, file = nome,form = 'unformatted')
+      read(1) uxb, uyb, wzb
       close(unit=1)
       ! gives the values of the boundary layer 
       ! profile for each node
       do j = 1, jmax
         do i = 1, ptsx
-          uxb(i,j)  = uxbt(i+shift,j)
-          uyb(i,j)  = uybt(i+shift,j)
-          wzb(i,j)  = wzbt(i+shift,j)
           ux(i,j,1) = uxb(i,j)
           uy(i,j,1) = uyb(i,j)
           wz(i,j,1) = wzb(i,j)
         end do
       end do
 
-      ! reads beta_fs from a file
-      open(1,file='beta_fs.dist',form='formatted')
-      read(1,*) beta_fs
-      close(unit=1)
-
-      do i = 1, ptsx
-        xad        = dble(i+shift-1)*dx + x0
-        m          = beta_fs(i+shift-1) / (2.d0 - beta_fs(i+shift-1))
-        duexmdx(i) = dcmplx(uxbt(1,jmax),0.d0) * m * xad**(m - 1.d0)
-      end do
 
       ! reads the derivative and Poisson coefficients
       open(1,file='pre_processing/coefs.bin',form='unformatted')
@@ -638,10 +727,17 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       ! mounts the lhs for the derivative calculation
       call derivs_k
 
+      ! pressure gradient variable calculation
+      do i = 1, ptsx
+        ueptsx(i) = uxb(i,jmax)
+      end do
+      call derparxue(duexmdx,ueptsx)
+      ! pressure gradient variable calculation
+
       ! variables used in the buffer domains
       do i = 1, i0
-        ep        = dble(i-1)/dble(i0-1)
-        bdfc(1,i) = ((6.d0*ep-15.d0)*ep+10.d0)*ep**3
+        ep        = dble(i-1) / dble(i0-1)
+        bdfc(1,i) = ((6.d0 * ep - 15.d0) * ep + 10.d0) * ep**3
         bdfc(2,i) = bdfc(1,i)
       end do
       do i = i0, i3
@@ -649,9 +745,9 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         bdfc(2,i) = bdfc(1,i)
       end do
       do i = i3, i4
-        ep        = dble(i-i3)/dble(i4-i3)
-c       bdfc(1,i) = 1.d0+((-6.d0*ep+15.d0)*ep-10.d0)*ep**3
-        bdfc(1,i) = (1.d0-ep**50)**4*dexp(-ep**4/10.d0)
+        ep        = dble(i-i3) / dble(i4-i3)
+c       bdfc(1,i) = 1.d0 + ((- 6.d0 * ep + 15.d0) * ep - 10.d0) * ep**3
+        bdfc(1,i) = (1.d0 - ep**50)**4 * dexp(-ep**4 / 10.d0)
         bdfc(2,i) = bdfc(1,i)
       end do
       do i = i4, imax
@@ -688,22 +784,25 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       include 'comm.multi'
       include 'mpif.h'
       include 'comm.fs'
-      character*15 nome
+      character*23 nome
       integer i, j, k, t0, igv
       real*8 dt2, dt6, a(imax,5), luf(imax,5), bdfc(2,imax), ep,
-     &       uxbt(imax,jmax), uybt(imax,jmax), wzbt(imax,jmax),
      &       uxb(ptsx,jmax), uyb(ptsx,jmax), wzb(ptsx,jmax), kc,
      &       afil(ptsx), bfil(ptsx), cfil(ptsx), stf_v, beta_fs_v,
-     &       Go(imax), fc, varg(ptsx,jmax), y, m, xad!, dvargdx(ptsx,jmax) 
+     &       Go(imax), fc, varg(ptsx,jmax), y, m, xad, 
+     &       dvargdx(ptsx,jmax), ueptsx(ptsx), x
       complex*16 dv1x(ptsx,jmax,kfour), dv2x(ptsx,jmax,kfour),
      &           dv1y(ptsx,jmax,kfour), dv2y(ptsx,jmax,kfour),
      &           dv1z(ptsx,jmax,kfour), dv2z(ptsx,jmax,kfour),
      &            wx1(ptsx,jmax,kfour),  wy1(ptsx,jmax,kfour),
      &            wz1(ptsx,jmax,kfour),   d2uydx2(ptsx,kfour)
+!     complex*16 uxo(ptsx,jmax,11), wxo(ptsx,jmax,11),
+!    &           uyo(ptsx,jmax,11), wyo(ptsx,jmax,11),
+!    &           uzo(ptsx,jmax,11), wzo(ptsx,jmax,11)
       common/blas/ uxb, uyb, wzb
       common/derw/ d2uydx2
       common/fil/ luf
-      common/vc/ varg !, dvargdx
+      common/vc/ varg, dvargdx
       common/bd/ bdfc
       common/filt/ afil, bfil, cfil
 
@@ -719,23 +818,6 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       ! x function of the disturbance strip for TS disturbances
       call var_ts
       call var_gv
-
-      ! definition of varg to be used in the program (curvature term)
-      do i = 1, imax
-        Go(i) = Re**(0.25d0) * dsqrt(0.1d0/3.2d0)
-      end do
-      do i = 1, ptsx
-        kc = Go(i+shift) * Go(i+shift) / dsqrt(Re)
-        do j = 1, jmax
-          if(stf.eq.1.d0) then
-           y = dble(j-1) * dy
-          else
-           y = dy * (stf**(j-1)-1.d0)/(stf-1.d0)  
-          endif        
-          varg(i,j) = kc
-        end do
-      end do
-c     call derparxr(dvargdx,varg) ! this is used for variable curvature
 
       ! all the variables are set to zero
       do k = 1, kfour
@@ -762,29 +844,10 @@ c     call derparxr(dvargdx,varg) ! this is used for variable curvature
       end do
 
       ! reads the boundary layer profile
-      open(1,file='baseflow2D/basens.bin',form='unformatted')
-      read(1) uxbt, uybt, wzbt
+      write(nome,'(a,i0.2,a)')'baseflow2D/based_',my_rank,'.bin'
+      open (1, file = nome,form = 'unformatted')
+      read(1) uxb, uyb, wzb
       close(unit=1)
-      ! gives the values of the boundary layer 
-      ! profile for each node
-      do j = 1, jmax
-        do i = 1, ptsx
-          uxb(i,j)  = uxbt(i+shift,j)
-          uyb(i,j)  = uybt(i+shift,j)
-          wzb(i,j)  = wzbt(i+shift,j)
-        end do
-      end do
-
-      ! reads beta_fs from a file
-      open(1,file='beta_fs.dist',form='formatted')
-      read(1,*) beta_fs
-      close(unit=1)
-
-      do i = 1, ptsx
-        xad        = dble(i+shift-1)*dx + x0
-        m          = beta_fs(i+shift-1) / (2.d0 - beta_fs(i+shift-1))
-        duexmdx(i) = uxbt(1,jmax) * m * xad**(m-1.d0)
-      end do
 
       open(1,file='pre_processing/coefs.bin',form='unformatted')
       read(1) fp_fd_coef
@@ -870,6 +933,41 @@ c     call derparxr(dvargdx,varg) ! this is used for variable curvature
 
       ! mounts the lhs for the derivative calculation
       call derivs_k
+      
+!     pressure gradient variable calculation
+      do i = 1, ptsx
+        ueptsx(i) = uxb(i,jmax)
+      end do
+      call derparxue(duexmdx,ueptsx)
+!     pressure gradient variable calculation
+
+      ! definition of varg to be used in the program (curvature term)
+      do i = 1, imax
+c       Go(i) = Re**(0.25d0) * dsqrt(0.1d0/3.2d0)
+c       Go(i) = 2.d0
+        Go(i) = 0.d0
+      end do
+      do i = 1, ptsx
+        x = 1.d0 + dble(i-1+shift)*dx
+        kc = Go(i+shift) * Go(i+shift) / dsqrt(Re)
+        do j = 1, jmax
+          varg(i,j) = kc
+          select case(cc)
+          case(2) 
+           varg(i,j) = varg(i,j) *
+     &                 2.d0*dsin((5.d0*x+3.d0)*pi/48.d0)
+          case(3) 
+           varg(i,j) = varg(i,j) *
+     &              (-1.d0)*dtanh(3.d0*(x-8.d0))
+          case(4) 
+           varg(i,j) = varg(i,j) *
+     &               0.5d0*(1.d0-dtanh(3.d0*(x-10.24d0)))
+          end select        
+        end do
+      end do
+
+      ! this is used for variable curvature
+      call derparxr(dvargdx,varg) 
 
       ! variables used in the buffer domains
       do i = 1, i0
@@ -902,14 +1000,28 @@ c       bdfc(1,i) = 1.d0+((-6.d0*ep+15.d0)*ep-10.d0)*ep**3
 
       ! if the program has stoped, it can be continued by putting
       ! start = 1 in the par.for and recompiling the program
-      if (start.eq.1) then 
-        write(nome,'(a,i0.2,a)')'data_',my_rank,'.bin'
-        open(3,file=nome,form='unformatted')
-        read(3) t0
-        read(3) ux,uy,uz,wx,wy,wz
-        close(3)
-        t0 = t0 + 1
-      end if
+c     if (start.eq.1) then 
+c       write(nome,'(a,i0.2,a)')'data_',my_rank,'.bin'
+c       write(nome,'(a,i0.2,a)')'data_',my_rank,'o.bin'
+c       open(3,file=nome,form='unformatted')
+c       read(3) t0
+c       read(3) ux,uy,uz,wx,wy,wz
+c       read(3) uxo,uyo,uzo,wxo,wyo,wzo
+c       close(3)
+c       t0 = t0 + 1
+c       do k = 1, 11
+c         do i = 1, ptsx
+c           do j = 1, jmax
+c             ux(i,j,k) = uxo(i,j,k)
+c             uy(i,j,k) = uyo(i,j,k)
+c             uz(i,j,k) = uzo(i,j,k)
+c             wx(i,j,k) = wxo(i,j,k)
+c             wy(i,j,k) = wyo(i,j,k)
+c             wz(i,j,k) = wzo(i,j,k)
+c           end do
+c         end do
+c       end do
+c     end if
 
       return
       end
@@ -930,11 +1042,10 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       character*15 nome
       integer i, j, k, t0, igv
       real*8 dt2, dt6, a(imax,5), luf(imax,5), bdfc(2,imax), ep,
-     &       uxbt(imax,jmax), uybt(imax,jmax), wzbt(imax,jmax),
-     &       thbt(imax,jmax), thb(ptsx,jmax),
-     &       uxb(ptsx,jmax), uyb(ptsx,jmax), wzb(ptsx,jmax), kc,
-     &       afil(ptsx), bfil(ptsx), cfil(ptsx), stf_v, beta_fs_v,
-     &       Go(imax), fc, varg(ptsx,jmax), y, m, xad!, dvargdx(ptsx,jmax) 
+     &       thb(ptsx,jmax), uxb(ptsx,jmax), uyb(ptsx,jmax), 
+     &       wzb(ptsx,jmax), kc, afil(ptsx), bfil(ptsx), cfil(ptsx), 
+     &       stf_v, beta_fs_v, Go(imax), fc, varg(ptsx,jmax), y, m, 
+     &       xad,dvargdx(ptsx,jmax), ueptsx(ptsx)
       complex*16 dv1x(ptsx,jmax,kfour), dv2x(ptsx,jmax,kfour),
      &           dv1y(ptsx,jmax,kfour), dv2y(ptsx,jmax,kfour),
      &           dv1z(ptsx,jmax,kfour), dv2z(ptsx,jmax,kfour),
@@ -946,7 +1057,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       common/blast/ thb
       common/derw/ d2uydx2
       common/fil/ luf
-      common/vc/ varg !, dvargdx
+      common/vc/ varg, dvargdx
       common/bd/ bdfc
       common/filt/ afil, bfil, cfil
 
@@ -978,7 +1089,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
           varg(i,j) = kc
         end do
       end do
-c     call derparxr(dvargdx,varg) ! this is used for variable curvature
+      call derparxr(dvargdx,varg) ! this is used for variable curvature
 
       ! all the variables are set to zero
       do k = 1, kfour
@@ -1009,30 +1120,10 @@ c     call derparxr(dvargdx,varg) ! this is used for variable curvature
       end do
 
       ! reads the boundary layer profile
-      open(1,file='baseflow2D/basens.bin',form='unformatted')
-      read(1) uxbt, uybt, wzbt, thbt
+      write(nome,'(a,i0.2,a)')'baseflow2D/based_',my_rank,'.bin'
+      open (1, file = nome,form = 'unformatted')
+      read(1) uxb, uyb, wzb, thb
       close(unit=1)
-      ! gives the values of the boundary layer 
-      ! profile for each node
-      do j = 1, jmax
-        do i = 1, ptsx
-          uxb(i,j)  = uxbt(i+shift,j)
-          uyb(i,j)  = uybt(i+shift,j)
-          wzb(i,j)  = wzbt(i+shift,j)
-          thb(i,j)  = thbt(i+shift,j)
-        end do
-      end do
-
-      ! reads beta_fs from a file
-      open(1,file='beta_fs.dist',form='formatted')
-      read(1,*) beta_fs
-      close(unit=1)
-
-      do i = 1, ptsx
-        xad        = dble(i+shift-1)*dx + x0
-        m          = beta_fs(i+shift-1) / (2.d0 - beta_fs(i+shift-1))
-        duexmdx(i) = uxbt(1,jmax) * m * xad**(m-1.d0)
-      end do
 
       open(1,file='pre_processing/coefs.bin',form='unformatted')
       read(1) fp_fd_coef
@@ -1118,6 +1209,13 @@ c     call derparxr(dvargdx,varg) ! this is used for variable curvature
 
       ! mounts the lhs for the derivative calculation
       call derivs_k
+
+!     pressure gradient variable calculation
+      do i = 1, ptsx
+        ueptsx(i) = uxb(i,jmax)
+      end do
+      call derparxue(duexmdx,ueptsx)
+!     pressure gradient variable calculation
 
       ! variables used in the buffer domains
       do i = 1, i0
@@ -1216,19 +1314,19 @@ c     call lterms_fi(a, b, c)
           do i = 1, ptsx
 
             dvx(i,j,k) = - dady(i,j,k) + v_kb(k) * b(i,j,k)
-     &                   + ( d2wxdx2(i,j,k) + d2wxdy2(i,j,k)
-     &                   +  v_k2b2(k) * wx(i,j,k) ) / Re
-!    &                   +  v_kb(k) * fy(i,j,k) - dfzdy(i,j,k)
+     &                   + ( d2wxdx2(i,j,k) + d2wxdy2(i,j,k) * fac_y
+     &                   + v_k2b2(k) * wx(i,j,k) ) / Re
+c    &                   + v_kb(k) * fy(i,j,k) / fac_y - dfzdy(i,j,k)
 
             dvy(i,j,k) = - v_kb(k) * c(i,j,k) + dadx(i,j,k)
-     &                   + ( d2wydx2(i,j,k) + d2wydy2(i,j,k)
-     &                   +  v_k2b2(k) * wy(i,j,k) ) / Re
-!    &                   +  dfzdx(i,j,k) - v_kb(k) * fx(i,j,k)
+     &                   + ( d2wydx2(i,j,k) + d2wydy2(i,j,k) * fac_y
+     &                   + v_k2b2(k) * wy(i,j,k) ) / Re
+c    &                   + dfzdx(i,j,k) - v_kb(k) * fx(i,j,k)
 
             dvz(i,j,k) = - dbdx(i,j,k) + dcdy(i,j,k)
-     &                   + ( d2wzdx2(i,j,k) + d2wzdy2(i,j,k)
-     &                   +  v_k2b2(k) * wz(i,j,k) ) / Re
-!    &                   +  dfxdy(i,j,k)  -  dfydx(i,j,k)
+     &                   + ( d2wzdx2(i,j,k) + d2wzdy2(i,j,k) * fac_y
+     &                   + v_k2b2(k) * wz(i,j,k) ) / Re
+c    &                   + dfxdy(i,j,k)  -  dfydx(i,j,k) / fac_y
 
           end do
         end do
@@ -1246,7 +1344,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       include 'comm.var'
       include 'comm.fourier'
       integer i, j, k
-      real*8 kc, varg(ptsx,jmax)!, dvargdx(ptsx,jmax)
+      real*8 kc, varg(ptsx,jmax), dvargdx(ptsx,jmax)
       complex*16 d2wxdx2(ptsx,jmax,kfour),d2wxdy2(ptsx,jmax,kfour),
      &           d2wydx2(ptsx,jmax,kfour),d2wydy2(ptsx,jmax,kfour),
      &           d2wzdx2(ptsx,jmax,kfour),d2wzdy2(ptsx,jmax,kfour),
@@ -1256,7 +1354,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &               dvz(ptsx,jmax,kfour),   dddx(ptsx,jmax,kfour),
      &                 a(ptsx,jmax,kfour),      b(ptsx,jmax,kfour),
      &                 c(ptsx,jmax,kfour),      d(ptsx,jmax,kfour)
-      common/vc/ varg  !, dvargdx
+      common/vc/ varg, dvargdx
 
       ! linear or non-linear product calculations
 c     call lterms_gv(a, b, c, d)
@@ -1284,16 +1382,17 @@ c     call lterms_gv(a, b, c, d)
 
             dvx(i,j,k) = - dady(i,j,k) + v_kb(k) * b(i,j,k)
      &                   - v_kb(k) * d(i,j,k) * varg(i,j)
-     &                   + ( d2wxdx2(i,j,k) + d2wxdy2(i,j,k)
+     &                   + ( d2wxdx2(i,j,k) + d2wxdy2(i,j,k) * fac_y
      &                   +  v_k2b2(k) * wx(i,j,k) ) / Re
 
             dvy(i,j,k) = - v_kb(k) * c(i,j,k) + dadx(i,j,k)
-     &                   + ( d2wydx2(i,j,k) + d2wydy2(i,j,k)
+     &                   + ( d2wydx2(i,j,k) + d2wydy2(i,j,k) * fac_y
      &                   +  v_k2b2(k) * wy(i,j,k) ) / Re
 
             dvz(i,j,k) = - dbdx(i,j,k) + dcdy(i,j,k)
-     &                   + varg(i,j) * dddx(i,j,k)  !+ d(i,j,k)*dvargdx(i,j)
-     &                   + ( d2wzdx2(i,j,k) + d2wzdy2(i,j,k)
+     &                   + varg(i,j) * dddx(i,j,k)
+     &                   + d(i,j,k) * dvargdx(i,j)
+     &                   + ( d2wzdx2(i,j,k) + d2wzdy2(i,j,k) * fac_y
      &                   +  v_k2b2(k) * wz(i,j,k) ) / Re
 
           end do
@@ -1312,7 +1411,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       include 'comm.var'
       include 'comm.fourier'
       integer i, j, k
-      real*8 kc, varg(ptsx,jmax)!, dvargdx(ptsx,jmax)
+      real*8 kc, varg(ptsx,jmax), dvargdx(ptsx,jmax)
       complex*16 d2wxdx2(ptsx,jmax,kfour),d2wxdy2(ptsx,jmax,kfour),
      &           d2wydx2(ptsx,jmax,kfour),d2wydy2(ptsx,jmax,kfour),
      &           d2wzdx2(ptsx,jmax,kfour),d2wzdy2(ptsx,jmax,kfour),
@@ -1326,7 +1425,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &               uth(ptsx,jmax,kfour),    vth(ptsx,jmax,kfour),
      &                 a(ptsx,jmax,kfour),      b(ptsx,jmax,kfour),
      &                 c(ptsx,jmax,kfour),      d(ptsx,jmax,kfour)
-      common/vc/ varg  !, dvargdx
+      common/vc/ varg, dvargdx
 
       ! linear or non-linear product calculations
 c     call lterms_th(a,b,c,d,uth,vth,wth)
@@ -1358,22 +1457,114 @@ c     call lterms_th(a,b,c,d,uth,vth,wth)
 
             dvx(i,j,k) = - dady(i,j,k) + v_kb(k) * b(i,j,k)
      &                   - v_kb(k) * d(i,j,k) * varg(i,j)
-     &                   + ( d2wxdx2(i,j,k) + d2wxdy2(i,j,k)
+     &                   + ( d2wxdx2(i,j,k) + d2wxdy2(i,j,k) * fac_y
      &                   +  v_k2b2(k) * wx(i,j,k) ) / Re
 
             dvy(i,j,k) = - v_kb(k) * c(i,j,k) + dadx(i,j,k)
-     &                   + ( d2wydx2(i,j,k) + d2wydy2(i,j,k)
+     &                   + ( d2wydx2(i,j,k) + d2wydy2(i,j,k) * fac_y
      &                   +  v_k2b2(k) * wy(i,j,k) ) / Re
 
             dvz(i,j,k) = - dbdx(i,j,k) + dcdy(i,j,k)
-     &                   + varg(i,j) * dddx(i,j,k)  !+ d(i,j,k)*dvargdx(i,j)
-     &                   + ( d2wzdx2(i,j,k) + d2wzdy2(i,j,k)
+     &                   + varg(i,j) * dddx(i,j,k)
+c    &                   + d(i,j,k) * dvargdx(i,j)
+     &                   + ( d2wzdx2(i,j,k) + d2wzdy2(i,j,k) * fac_y
      &                   +  v_k2b2(k) * wz(i,j,k) ) / Re
 
+c VERIFICAR COMO FUNCIONA O FAC_Y PARA EQUAÇÃO DE TRANSPORTE DE THETA
             dvt(i,j,k) = - duthdx(i,j,k) - dvthdy(i,j,k)
      &                   - v_kb(k) * wth(i,j,k)
      &                   + ( d2thdx2(i,j,k) + d2thdy2(i,j,k)
      &                   +  v_k2b2(k) * th(i,j,k) )/(Re*Pr)
+
+          end do
+        end do
+      end do
+
+      return
+      end
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine drv_les(dvx, dvy, dvz)
+
+      ! calculate the derivatives for RK method
+      implicit none
+      include 'par.for'
+      include 'comm.var'
+      include 'comm.fourier'
+      integer i, j, k
+      complex*16 d2wxdx2(ptsx,jmax,kfour),d2wxdy2(ptsx,jmax,kfour),
+     &           d2wydx2(ptsx,jmax,kfour),d2wydy2(ptsx,jmax,kfour),
+     &           d2wzdx2(ptsx,jmax,kfour),d2wzdy2(ptsx,jmax,kfour),
+     &             dfydx(ptsx,jmax,kfour),  dfzdx(ptsx,jmax,kfour),
+     &             dfxdy(ptsx,jmax,kfour),  dfzdy(ptsx,jmax,kfour),
+     &              dadx(ptsx,jmax,kfour),   dady(ptsx,jmax,kfour),
+     &              dbdx(ptsx,jmax,kfour),   dcdy(ptsx,jmax,kfour),
+     &               dvx(ptsx,jmax,kfour),    dvy(ptsx,jmax,kfour),
+     &               dvz(ptsx,jmax,kfour),     fy(ptsx,jmax,kfour),
+     &                fx(ptsx,jmax,kfour),     fz(ptsx,jmax,kfour),
+     &                 a(ptsx,jmax,kfour),      b(ptsx,jmax,kfour),
+     &                 c(ptsx,jmax,kfour)!,
+c    &             F_nux(ptsx,jmax,kfour),  F_nuy(ptsx,jmax,kfour),
+c    &             F_nuz(ptsx,jmax,kfour)
+      common/force/ fx, fy, fz
+
+      ! linear or non-linear product calculations
+c     call lterms_fi(a, b, c)
+      call nlterms_fi(a, b, c)
+
+      ! derivative calculations
+      call derparx(dadx, a)
+      call derparx(dbdx, b)
+
+      call dery(dady, a)
+      call dery(dcdy, c)
+
+      call derparxx(d2wxdx2, wx)
+      call derparxx(d2wydx2, wy)
+      call derparxx(d2wzdx2, wz)
+
+      call deryy(d2wxdy2, wx)
+      call deryy(d2wydy2, wy)
+      call deryy(d2wzdy2, wz)
+
+c      call les_terms(F_nux, F_nuy, F_nuz)
+       call les_terms(fx, fy, fz) ! only LES terms without immersed boundary
+
+      ! immersed boundary method forcing terms and derivative calculations
+c     call cvirt
+c     do k = 1, kfour
+c       do j = 1, jmax
+c         do i = 1, ptsx
+c           fx(i,j,k) = fx(i,j,k) + F_nux(i,j,k)
+c           fy(i,j,k) = fy(i,j,k) + F_nuy(i,j,k)
+c           fz(i,j,k) = fz(i,j,k) + F_nuz(i,j,k)
+c         end do
+c       end do
+c     end do
+
+      call derparx(dfydx, fy)
+      call derparx(dfzdx, fz)
+      call dery(dfxdy, fx)
+      call dery(dfzdy, fz)
+
+      do k = 1, kfour
+        do j = 2, jmax
+          do i = 1, ptsx
+
+            dvx(i,j,k) = - dady(i,j,k) + v_kb(k) * b(i,j,k)
+     &                   + ( d2wxdx2(i,j,k) + d2wxdy2(i,j,k) * fac_y
+     &                   + v_k2b2(k) * wx(i,j,k) ) / Re
+     &                   + v_kb(k) * fy(i,j,k) / fac_y - dfzdy(i,j,k)
+
+            dvy(i,j,k) = - v_kb(k) * c(i,j,k) + dadx(i,j,k)
+     &                   + ( d2wydx2(i,j,k) + d2wydy2(i,j,k) * fac_y
+     &                   + v_k2b2(k) * wy(i,j,k) ) / Re
+     &                   + dfzdx(i,j,k) - v_kb(k) * fx(i,j,k)
+
+            dvz(i,j,k) = - dbdx(i,j,k) + dcdy(i,j,k)
+     &                   + ( d2wzdx2(i,j,k) + d2wzdy2(i,j,k) * fac_y
+     &                   + v_k2b2(k) * wz(i,j,k) ) / Re
+     &                   + dfxdy(i,j,k)  -  dfydx(i,j,k) / fac_y
 
           end do
         end do
@@ -1389,13 +1580,15 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       implicit none
       include 'par.for'
       include 'comm.var'
-      integer i, t
+      integer i, k, t
       real*8 A, ep, fcx2(i2), fcllx2(i2)
       complex*16 d2uydx2(ptsx,kfour)
       common/equa2/ fcx2,fcllx2
       common/derw/ d2uydx2
 
-      A = 5.d-3
+c     A = 1d-4
+      A = 7.5d-3 * dsqrt(fac_y)
+c     A = 1.85d-4
       
 c     if (t.eq.1) call wdata2(a)
       
@@ -1407,8 +1600,10 @@ c     if (t.eq.1) call wdata2(a)
       end if
       
       do i = i1 + 1, i2 - 1
-        uy(i,1,2)    = dcmplx( A*fcx2(i), 0.d0 )
-        d2uydx2(i,2) = dcmplx( A*fcllx2(i), 0.d0 )
+       do k = 2, 2
+        uy(i,1,k)    = dcmplx( A*fcx2(i), 0.d0 )
+        d2uydx2(i,k) = dcmplx( A*fcllx2(i), 0.d0 )
+       enddo 
       end do
 
       return
@@ -1430,9 +1625,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! here one must choose which amplitude and frequency 
       ! disturbances are going to be applied
-c     A = 1.115d-3     ! 0,45 %
-c     A = 1.864d-3     ! 0,75 %
-      A = 1.d-5        ! 0,75 %
+      A = 1.d-5 * dsqrt(fac_y) ! 0,75 %
+c     A = 1.d-6 * dsqrt(fac_y) ! 0,75 %
       H = 1.d0
 
       fct = A * dsin(H * ( dble(t) + tempt ) * omega * dt)
@@ -1468,9 +1662,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! here you must choose which amplitude and frequency
       ! disturbances are you going to be applied
-c     A = 2.1d-4
-c     H = 0.5d0
-      A = 1.d-5
+      A = 1.d-5 * dsqrt(fac_y)
       H = 1.d0
 
 c     if (t.eq.1) call wdata(A,H)
@@ -1507,9 +1699,9 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         fcllx(i) = 0.d0
       end do
 
-      imed  = dble(i1 + i2) / 2.d0
-      x1    = x0 + dble(i1 - 1) * dx
-      div   = 1.d0 / ( dble(imed - i1) * dx )
+      imed = dble(i1 + i2) / 2.d0
+      x1   = x0 + dble(i1 - 1) * dx
+      div  = 1.d0 / ( dble(imed - i1) * dx )
 
       a = -  19683.d0 / 4096.d0 * div**8
       b =   177147.d0 / 4096.d0 * div**7
@@ -1549,10 +1741,9 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       implicit none
       include 'par.for'
       integer i
-      real*8 x, fcx2(i2), fcllx2(i2), pi
+      real*8 x, fcx2(i2), fcllx2(i2)
       common/equa2/ fcx2,fcllx2
 
-      pi = 4.d0*datan(1.d0)
       do i = 1, i2
         fcx2(i)   = 0.d0
         fcllx2(i) = 0.d0

@@ -53,7 +53,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         end do
       end do
 
-      if (my_form.eq.0) then
+      if (my_form.eq.0.or.my_form.eq.4) then
         open(1,file='baseflow2D/basens.bin',form='unformatted')
         read(1) uxbt, uybt, wzbt
         close(unit=1)
@@ -77,8 +77,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       if (my_form.eq.2) then
         ! writes data to spacial space to be open by tecplot
         open (3, file = 'spatial.dat',status = 'unknown')
-        write(3,*) 'VARIABLES="x","y","z","velu","vely",
-     &  "velz","vortx","vorty","vortz","theta"'
+        write(3,*) 'VARIABLES="x","y","z","u","v","w",
+     &             "wx","wy","wz","theta"'
         write(3,*) 'ZONE I=',imax,', J=',jmax,', K=',kphys+1,', F=POINT'
         
         z = -1.d0 * dz
@@ -116,9 +116,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       else
         ! writes data to spacial space to be open by tecplot
         open (3, file = 'spatial.dat',status = 'unknown')
-        write(3,*) 'VARIABLES="x","y","z","velu","vely",
-     &  "velz","vortx","vorty","vortz"'
-        write(3,*) 'ZONE I=',imax,', J=',jmax,', K=',kphys+1,', F=POINT'
+        write(3,*) 'VARIABLES="x","y","z","u","v","w","wx","wy","wz"'
+        write(3,*) 'ZONE I=',imax,', J=',jmax,', K=',kphys+1,',F=POINT'
         
         z = -1.d0 * dz
         do j = 1, jmax

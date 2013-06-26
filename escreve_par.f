@@ -80,6 +80,68 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       return
       end
 
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine escreve_secondary(t, fanal)
+
+      ! write the results for fourier analysis in time
+      implicit none
+      include 'par.for'
+      include 'comm.par'
+      include 'comm.var'
+      character*20 nm
+      integer i, j, k, t, var, fanal
+      real*8 uxb(ptsx,jmax), uyb(ptsx,jmax), wzb(ptsx,jmax)
+      complex*16 uxp(ptsx,jmax,kfour), ux_fta(ptsx/8+1,jmax,kfour)
+      common/blas/ uxb, uyb, wzb
+
+c     var = (t - tt) / fanal + 1
+
+      write(nm,'(a,i0.2,a,i0.5,a)')'pert_',my_rank,'_',t,'.bin'
+      write(*,*) ' The results are stored in the files pert_cc_XX' 
+      select case(my_form)
+
+       case(0, 4)
+        do j = 1, jmax
+          do i = 1, ptsx
+            uxp(i,j,1) = ux(i,j,1) - uxb(i,j)
+          end do
+        end do
+        do k = 2, kfour
+          do j = 1, jmax
+            do i = 1, ptsx
+              uxp(i,j,k) = ux(i,j,k)
+            end do
+          end do
+        end do
+        do k = 1, kfour
+          do j = 1, jmax
+            do i = 1, ptsx/8+1
+              ux_fta(i,j,k) = uxp((i-1)*8+1,j,k)
+            end do
+          end do
+        end do
+        open(1,file=nm,form='unformatted')
+        write(1) ux_fta
+        close (unit=1)
+
+       case default
+        do k = 1, kfour
+          do j = 1, jmax
+            do i = 1, ptsx/8+1
+              ux_fta(i,j,k) = ux((i-1)*8+1,j,k)
+            end do
+          end do
+        end do
+        open(1,file=nm,form='unformatted')
+        write(1) ux_fta
+        close (unit=1)
+
+      end select
+
+      return
+      end
+
+
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 c                                                       c
 c             end subroutines writes the results        c

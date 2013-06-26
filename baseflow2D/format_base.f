@@ -56,7 +56,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         write(1) uxt, uyt, wzt, tht
         close (unit=1)
 
-       else
+       else ! my_form = 0 or my_form = 1
         ! Disturbances variables data
         inter = 2**( msh - 1 ) * ( stencil - 2 )
         do my_rank = 0, np - 1

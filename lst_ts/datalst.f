@@ -8,7 +8,7 @@
       read(*,*) f
       open(2,file='datalst.dat',form='formatted')
         write(2,*) dsqrt(Re), omega/dsqrt(Re), beta*dble(f)/dsqrt(Re),
-     &             imax, dx, 4.d0 * dx
+     &             imax, dx
       close(unit=2)
 
       stop

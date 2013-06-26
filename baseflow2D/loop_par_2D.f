@@ -182,7 +182,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       integer status(MPI_status_size)
       integer i, j, i_ini
       real*8 var(jmax), xad, ue, aux(2), dvdx(ptsx,jmax),
-     &       duydy(ptsx,jmax), dvdxa, dya, m
+     &       duydy(ptsx,jmax), dvdxa, dya, m, ueptsx(ptsx)
 
       if (my_rank.eq.0) then
         do j = 1, jmax
@@ -190,7 +190,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &              - 5400.d0 * uy(3,j) + 4800.d0 * uy(4,j)
      &              - 2700.d0 * uy(5,j) + 864.d0 *  uy(6,j)
      &              -  120.d0 * uy(7,j) ) / (720.d0 * dx)
-          var(j) = dvdxa + wz(1,j)
+          var(j) = dvdxa / fac_y  + wz(1,j)
         end do
      
         dya = dy
@@ -296,10 +296,13 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &               ierr)
       do i = 1, ptsx
         xad        = dble(i+shift-1)*dx + x0
-        m          = beta_fs(i+shift-1) / (2.d0 - beta_fs(i+shift-1))
+!       m          = beta_fs(i+shift-1) / (2.d0 - beta_fs(i+shift-1))
+        m          = beta_fs(i+shift) / (2.d0 - beta_fs(i+shift))
         ux(i,jmax) = ue * xad**m
-        duexmdx(i) = ue * m * xad**(m - 1.d0)
+        ueptsx(i) = ux(i,jmax)
+!       duexmdx(i) = ue * m * xad**(m - 1.d0)
       end do
+      call derparxue(duexmdx,ueptsx)
 
       return
       end
@@ -317,7 +320,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       real*8 aux(3), var(ptsx,jmax)
 
       if (my_rank .lt. numproc) then
-        ! Recebendo as ultimas colunas
+        ! receives the lasts columns
         call MPI_Recv(aux, 3, mpi_double_precision, my_rank + 1,
      &                140, MPI_COMM_WORLD, status, ierr)
         do i = 1, 3
@@ -325,7 +328,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         end do
       end if
       if (my_rank .gt. 0) then
-        ! Enviando as segundas colunas
+        ! sends the seconds columns
         do i = 1, 3
           aux(i) = var(i + inter - 2, 1)
         end do
@@ -349,7 +352,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       real*8 aux(3*jmax), var(ptsx,jmax)
 
       if (my_rank.lt.numproc) then
-        ! Recebendo as ultimas colunas
+        ! receives the lasts columns
         call MPI_Recv(aux, 3*jmax, mpi_double_precision, my_rank + 1,
      &                240, MPI_COMM_WORLD, status, ierr)
         do i = 1, 3
@@ -359,7 +362,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         end do
       end if
       if (my_rank.gt.0) then
-        ! Enviando as segundas colunas
+        ! sends the seconds columns
         do i = 1, 3
           do j = 1, jmax
             aux(j+(i-1)*jmax) = var(i + inter - 2,j)

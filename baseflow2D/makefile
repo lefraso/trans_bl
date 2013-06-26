@@ -9,7 +9,7 @@ int : $(OBJ2)
 	mpif77 $(OBJ2) -o integ
 
 .f.o:
-	mpif77 -c -O3 $<
+	mpif77 -c -O2 $<
 #	mpif77 -O0 -g -Wall -fbounds-check -c $<
 
 clean:

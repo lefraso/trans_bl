@@ -10,7 +10,7 @@ beta : $(OBJ2)
 	gfortran $(OBJ2) -o beta
 
 clean :
-	rm *.bin *.mod *~ coef beta fs *.dat ../beta_fs.dist
+	rm *.bin *.mod *.o *~ coef fs *.dat form integ beta
 
 fs:	
 	./fs.sh
