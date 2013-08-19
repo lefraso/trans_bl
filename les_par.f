@@ -73,18 +73,18 @@ c     call calc_nu_t_wale(nu_tp)
       do k = 1, kphys
         do j = 1, jmax
           do i = 1, ptsx
-            F_nuxp(i,j,k) =  nu_tp(i,j,k) *    lapup(i,j,k) +
-     &               2.d0 * (S_xxp(i,j,k) * dnu_tdxp(i,j,k) +
-     &                       S_xyp(i,j,k) * dnu_tdyp(i,j,k) +
-     &                       S_xzp(i,j,k) * dnu_tdzp(i,j,k) )
-            F_nuyp(i,j,k) =  nu_tp(i,j,k) *    lapvp(i,j,k) +
-     &               2.d0 * (S_xyp(i,j,k) * dnu_tdxp(i,j,k) +
-     &                       S_yyp(i,j,k) * dnu_tdyp(i,j,k) +
-     &                       S_yzp(i,j,k) * dnu_tdzp(i,j,k) )
-            F_nuzp(i,j,k) =  nu_tp(i,j,k) *    lapwp(i,j,k) +
-     &               2.d0 * (S_xzp(i,j,k) * dnu_tdxp(i,j,k) +
-     &                       S_yzp(i,j,k) * dnu_tdyp(i,j,k) +
-     &                       S_zzp(i,j,k) * dnu_tdzp(i,j,k) )
+            F_nuxp(i,j,k) =  nu_tp(i,j,k) *    lapup(i,j,k)
+!    &             + 2.d0 * (S_xxp(i,j,k) * dnu_tdxp(i,j,k)
+!    &             +         S_xyp(i,j,k) * dnu_tdyp(i,j,k)
+!    &             +         S_xzp(i,j,k) * dnu_tdzp(i,j,k) )
+            F_nuyp(i,j,k) =  nu_tp(i,j,k) *    lapvp(i,j,k)
+!    &             + 2.d0 * (S_xyp(i,j,k) * dnu_tdxp(i,j,k)
+!    &             +         S_yyp(i,j,k) * dnu_tdyp(i,j,k)
+!    &             +         S_yzp(i,j,k) * dnu_tdzp(i,j,k) )
+            F_nuzp(i,j,k) =  nu_tp(i,j,k) *    lapwp(i,j,k)
+!    &             + 2.d0 * (S_xzp(i,j,k) * dnu_tdxp(i,j,k)
+!    &             +         S_yzp(i,j,k) * dnu_tdyp(i,j,k)
+!    &             +         S_zzp(i,j,k) * dnu_tdzp(i,j,k) )
           end do
         end do
       end do

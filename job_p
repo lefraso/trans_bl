@@ -5,13 +5,16 @@
 
  NP=8
 
- echo "Nos reservados:"
- cat $PBS_NODEFILE
- sleep 5
- echo "Iniciando o daemon do MPD..."
- mpdboot -n 1 -f $PBS_NODEFILE
- sleep 5
- echo "Executando em cada no"
+ mpdtrace
+ if [ $? -ne 0 ]; then
+  echo "Nos reservados:"
+  cat $PBS_NODEFILE
+  sleep 5
+  echo "Iniciando o daemon do MPD..."
+  mpdboot -n 1 -f $PBS_NODEFILE
+  sleep 5
+  echo "Executando em cada no"
+ fi
  
  cd /temp
  rm -r josuelkr

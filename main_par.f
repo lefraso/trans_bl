@@ -1039,7 +1039,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       include 'comm.multi'
       include 'mpif.h'
       include 'comm.fs'
-      character*15 nome
+      character*30 nome
       integer i, j, k, t0, igv
       real*8 dt2, dt6, a(imax,5), luf(imax,5), bdfc(2,imax), ep,
      &       thb(ptsx,jmax), uxb(ptsx,jmax), uyb(ptsx,jmax), 
