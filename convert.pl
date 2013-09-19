@@ -40,7 +40,7 @@ while(<FD>) {
 	if(m/jmax = (\d+)/) {
 		$map{"jmax"} = $1;
 	}
-	if(m/dy = ([-0-9.de*dsqrt(fac_y)]+)/) {
+	if(m/dy = ([-0-9.de*dsqrt(fac_y)\/]+)/) {
 		$map{"dy"} = $1;
 	}
 	if(m/stf = ([-0-9.de]+)/) {

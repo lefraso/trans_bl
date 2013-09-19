@@ -42,6 +42,7 @@
   use constants
 
   ! first derivative coefficients
+  real(kind=8)            :: fp_fd_coef_e(6)
   real(kind=8)            :: fp_fd_coef(7)
   real(kind=8)            :: sp_fd_coef(9)
   real(kind=8)            :: cp_fd_coef(8)

@@ -185,9 +185,9 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       integer i
       real*8 rhs(ptsx), fc(ptsx)
 
-      rhs(1)=( - 74.d0 * fc(1) + 16.d0 * fc(2)
-     &         + 72.d0 * fc(3) - 16.d0 * fc(4)
-     &         +  2.d0 * fc(5) ) / ( 24.d0 * dx )
+      rhs(1)=( - 25.d0 * fc(1) + 48.d0 * fc(2)
+     &         - 36.d0 * fc(3) + 16.d0 * fc(4)
+     &         -  3.d0 * fc(5) ) / ( 12.d0 * dx )
       
       rhs(2)=( - 406.d0 * fc(1) - 300.d0 * fc(2)
      &         + 760.d0 * fc(3) -  80.d0 * fc(4)
@@ -228,9 +228,9 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       real*8 rhs(ptsx,jmax), fc(ptsx,jmax)
 
       do j = 1, jmax
-        rhs(1,j)=(-74.d0*fc(1,j) + 16.d0*fc(2,j) +
-     &             72.d0*fc(3,j) - 16.d0*fc(4,j) +
-     &              2.d0*fc(5,j))/(24.d0*dx)
+        rhs(1,j)=(-25.d0*fc(1,j) + 48.d0*fc(2,j) 
+     &            -36.d0*fc(3,j) + 16.d0*fc(4,j) 
+     &             -3.d0*fc(5,j))/(12.d0*dx)
         
         rhs(2,j)=(-406.d0*fc(1,j)- 300.d0*fc(2,j) +
      &             760.d0*fc(3,j)-  80.d0*fc(4,j) +
@@ -266,9 +266,9 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       do k = 1, kfour
         do j = 1, jmax
-          rhs(1,j,k)=( - 74.d0 * fc(1,j,k) + 16.d0 * fc(2,j,k) +
-     &                   72.d0 * fc(3,j,k) - 16.d0 * fc(4,j,k) +
-     &                    2.d0 * fc(5,j,k) ) / ( 24.d0 * dx )
+          rhs(1,j,k)=( - 25.d0 * fc(1,j,k) + 48.d0 * fc(2,j,k) 
+     &                 - 36.d0 * fc(3,j,k) + 16.d0 * fc(4,j,k) 
+     &                 -  3.d0 * fc(5,j,k) ) / ( 12.d0 * dx )
           
           rhs(2,j,k)=( - 406.d0 * fc(1,j,k) - 300.d0 * fc(2,j,k) +
      &                   760.d0 * fc(3,j,k) -  80.d0 * fc(4,j,k) +
@@ -312,9 +312,9 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       do k = 1, kphys
         do j = 1, jmax
-          rhs(1,j,k)=( - 74.d0 * fc(1,j,k) + 16.d0 * fc(2,j,k) +
-     &                   72.d0 * fc(3,j,k) - 16.d0 * fc(4,j,k) +
-     &                    2.d0 * fc(5,j,k) ) / ( 24.d0 * dx )
+          rhs(1,j,k)=( - 25.d0 * fc(1,j,k) + 48.d0 * fc(2,j,k) 
+     &                 - 36.d0 * fc(3,j,k) + 16.d0 * fc(4,j,k) 
+     &                 -  3.d0 * fc(5,j,k) ) / ( 12.d0 * dx )
           
           rhs(2,j,k)=( - 406.d0 * fc(1,j,k) - 300.d0 * fc(2,j,k) +
      &                   760.d0 * fc(3,j,k) -  80.d0 * fc(4,j,k) +
@@ -409,11 +409,11 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       do k = 1, kfour
         do i = 1, ptsx
-          rhs(i,1,k) = v_qdy(1)* ( fp_fd_coef(3) * fc(i,1,k) +
-     &                             fp_fd_coef(4) * fc(i,2,k) +
-     &                             fp_fd_coef(5) * fc(i,3,k) +
-     &                             fp_fd_coef(6) * fc(i,4,k) +
-     &                             fp_fd_coef(7) * fc(i,5,k) )
+          rhs(i,1,k) = v_qdy(1)* ( fp_fd_coef_e(2) * fc(i,1,k) +
+     &                             fp_fd_coef_e(3) * fc(i,2,k) +
+     &                             fp_fd_coef_e(4) * fc(i,3,k) +
+     &                             fp_fd_coef_e(5) * fc(i,4,k) +
+     &                             fp_fd_coef_e(6) * fc(i,5,k) )
           
           rhs(i,2,k) = v_qdy(1)* ( sp_fd_coef(4) * fc(i,1,k) +
      &                             sp_fd_coef(5) * fc(i,2,k) +
@@ -461,11 +461,11 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       do k = 1, kphys
         do i = 1, ptsx
-          rhs(i,1,k) = v_qdy(1)* ( fp_fd_coef(3) * fc(i,1,k) +
-     &                             fp_fd_coef(4) * fc(i,2,k) +
-     &                             fp_fd_coef(5) * fc(i,3,k) +
-     &                             fp_fd_coef(6) * fc(i,4,k) +
-     &                             fp_fd_coef(7) * fc(i,5,k) )
+          rhs(i,1,k) = v_qdy(1)* ( fp_fd_coef_e(2) * fc(i,1,k) +
+     &                             fp_fd_coef_e(3) * fc(i,2,k) +
+     &                             fp_fd_coef_e(4) * fc(i,3,k) +
+     &                             fp_fd_coef_e(5) * fc(i,4,k) +
+     &                             fp_fd_coef_e(6) * fc(i,5,k) )
           
           rhs(i,2,k) = v_qdy(1)* ( sp_fd_coef(4) * fc(i,1,k) +
      &                             sp_fd_coef(5) * fc(i,2,k) +
@@ -1047,8 +1047,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       real*8 a(jmax), b(jmax), c(jmax)
 
       a(1)      = 0.d0
-      b(1)      = fp_fd_coef(1)
-      c(1)      = fp_fd_coef(2)
+      b(1)      = fp_fd_coef_e(1)
+      c(1)      = 0.d0 
 
       a(2)      = sp_fd_coef(1)
       b(2)      = sp_fd_coef(2)
@@ -1152,7 +1152,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       a(1)      = 0.d0
       b(1)      = 1.d0
-      c(1)      = 4.d0
+      c(1)      = 0.d0
 
       a(2)      = 1.d0
       b(2)      = 6.d0

@@ -1763,6 +1763,7 @@ module derivative
  
   implicit none
   real(kind=8) :: fp_fd_c(7,7), fp_fd_b(7)
+  real(kind=8) :: fp_fd_c_e(6,6), fp_fd_b_e(6)
   real(kind=8) :: sp_fd_c(9,9), sp_fd_b(9)
   real(kind=8) :: cp_fd_c(8,8), cp_fd_b(8)
   real(kind=8) :: pp_fd_c(9,9), pp_fd_b(9)
@@ -1787,7 +1788,13 @@ module derivative
   call first_point_first_derivative_matrix_coef(fp_fd_c, 7)
   call rhs_first_point_first_derivative_matrix_coef(fp_fd_b, 7)
   call ludecomp(fp_fd_c, fp_fd_b, fp_fd_coef, 7)
- 
+
+  call first_point_first_derivative_matrix_coef_explicit(fp_fd_c_e, 6)
+  call rhs_first_point_first_derivative_matrix_coef_explicit(fp_fd_b_e, 6)
+  call ludecomp(fp_fd_c_e, fp_fd_b_e, fp_fd_coef_e, 6)
+
+  write(*,*) fp_fd_coef_e
+
   call second_point_first_derivative_matrix_coef(sp_fd_c, 9)
   call rhs_second_point_first_derivative_matrix_coef(sp_fd_b, 9)
   call ludecomp(sp_fd_c, sp_fd_b, sp_fd_coef, 9)
@@ -1989,6 +1996,89 @@ module derivative
   return
 
  end subroutine rhs_dwydy_matrix_coef
+
+!------------------------------------------------------------------------------------
+!------------------------------------------------------------------------------------
+ subroutine first_point_first_derivative_matrix_coef_explicit(m, n)
+ 
+  implicit none
+  integer, intent(in)       :: n
+  real(kind=8), intent(out) :: m(n,n)
+  real(kind=8)              :: hp1, hp2, hp3, hp4, dy
+ 
+  dy = 1.d0
+  ! 'normalized' length
+  hp1 = dy
+  hp2 = hp1 + stf    * dy
+  hp3 = hp2 + stf**2 * dy
+  hp4 = hp3 + stf**3 * dy
+ 
+  ! matrix definition
+  m(1,1) = 1.d0
+  m(1,2) = 0.d0
+  m(1,3) = 0.d0
+  m(1,4) = 0.d0
+  m(1,5) = 0.d0
+  m(1,6) = 0.d0
+
+  m(3,1) =   1.d0
+  m(3,2) =   0.d0
+  m(3,3) = - hp1
+  m(3,4) = - hp2
+  m(3,5) = - hp3
+  m(3,6) = - hp4
+
+  m(2,1) =   0.d0
+  m(2,2) = - 1.d0
+  m(2,3) = - 1.d0
+  m(2,4) = - 1.d0
+  m(2,5) = - 1.d0
+  m(2,6) = - 1.d0
+ 
+  m(4,1) =   0.d0
+  m(4,2) =   0.d0
+  m(4,3) = - hp1**2 / 2.d0
+  m(4,4) = - hp2**2 / 2.d0
+  m(4,5) = - hp3**2 / 2.d0
+  m(4,6) = - hp4**2 / 2.d0
+ 
+  m(5,1) =   0.d0
+  m(5,2) =   0.d0
+  m(5,3) = - hp1**3 / 6.d0
+  m(5,4) = - hp2**3 / 6.d0
+  m(5,5) = - hp3**3 / 6.d0
+  m(5,6) = - hp4**3 / 6.d0
+ 
+  m(6,1) =   0.d0
+  m(6,2) =   0.d0
+  m(6,3) = - hp1**4 / 24.d0
+  m(6,4) = - hp2**4 / 24.d0
+  m(6,5) = - hp3**4 / 24.d0
+  m(6,6) = - hp4**4 / 24.d0
+
+ return
+
+ end subroutine first_point_first_derivative_matrix_coef_explicit
+ 
+!------------------------------------------------------------------------------------
+!------------------------------------------------------------------------------------
+ 
+ subroutine rhs_first_point_first_derivative_matrix_coef_explicit(b, n)
+
+  ! right-hand side of first derivative coef.
+  implicit none
+  integer, intent(in)       :: n
+  integer                   :: i
+  real(kind=8), intent(out) :: b(n)
+ 
+  do i = 2, n
+    b(i) = 0.d0
+  end do
+  b(1) = 12.d0
+ 
+  return
+
+ end subroutine rhs_first_point_first_derivative_matrix_coef_explicit
 
 !------------------------------------------------------------------------------------
 !------------------------------------------------------------------------------------

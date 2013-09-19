@@ -183,8 +183,7 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       logical INV
       integer j, nby2, l, k, me, mm, i, lpk,M,N 
       real*8 a(n), b(n), tr, ti, sr, si, ninv
-      real*8 ur(n/2), ui(n/2), wr, wi, sign, pi, t, pibyk
-      data pi/3.141592653589793d0/
+      real*8 ur(n/2), ui(n/2), wr, wi, sign, t, pibyk
 
 c************************************************************************
 c

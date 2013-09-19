@@ -101,12 +101,16 @@ c               uy(ptsx,j,k) = rhs(j)
                 uy(ptsx,j,k) = uyb(ptsx,j)
               end do
              else
-c             uy(ptsx,j,k) = rhs(j)
-              uy(ptsx,j,k) = dcmplx(0.d0,0.d0)
+              do j = 2, jmax
+c               uy(ptsx,j,k) = rhs(j)
+                uy(ptsx,j,k) = dcmplx(0.d0,0.d0)
+              end do
             end if
            case default
-c            uy(ptsx,j,k) = rhs(j)
-             uy(ptsx,j,k) = dcmplx(0.d0,0.d0)
+            do j = 2, jmax
+c             uy(ptsx,j,k) = rhs(j)
+              uy(ptsx,j,k) = dcmplx(0.d0,0.d0)
+            end do
           end select
         end do
       end if
@@ -581,55 +585,55 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       i_ini = 1
       if (my_rank.eq.0) i_ini = 2
 
-      ! for the fundamental mode, the vorticity equation is used
-      k = 1
-      do j = 2, jmax
-        if (my_rank.gt.0) then
-          call MPI_Recv(aux, 2, MPI_COMPLEX16, my_rank - 1, 
-     &                  253, MPI_COMM_WORLD, status, ierr)
-          uz(1,j,k) = aux(1)
-          uz(2,j,k) = aux(2)
-         else
-          uz(2,j,k) = ( dx * ( 251.d0 * wy(1,j,k) + 646.d0 * wy(2,j,k)
-     &                       - 264.d0 * wy(3,j,k) + 106.d0 * wy(4,j,k)
-     &                       -  19.d0 * wy(5,j,k) )
-     &                + 720.d0 * uz(1,j,k) ) / 720.d0
-        end if
+!     ! for the fundamental mode, the vorticity equation is used
+!     k = 1
+!     do j = 2, jmax
+!       if (my_rank.gt.0) then
+!         call MPI_Recv(aux, 2, MPI_COMPLEX16, my_rank - 1, 
+!    &                  253, MPI_COMM_WORLD, status, ierr)
+!         uz(1,j,k) = aux(1)
+!         uz(2,j,k) = aux(2)
+!        else
+!         uz(2,j,k) = ( dx * ( 251.d0 * wy(1,j,k) + 646.d0 * wy(2,j,k)
+!    &                       - 264.d0 * wy(3,j,k) + 106.d0 * wy(4,j,k)
+!    &                       -  19.d0 * wy(5,j,k) )
+!    &                + 720.d0 * uz(1,j,k) ) / 720.d0
+!       end if
 
-        do i = 3, ptsx - 2
-          uz(i,j,k) = ( dx * (  281.d0 * wy(i-2,j,k)
-     &                       + 2056.d0 * wy(i-1,j,k)
-     &                       + 1176.d0 * wy(i,j,k)
-     &                       -  104.d0 * wy(i+1,j,k)
-     &                       +   11.d0 * wy(i+2,j,k) ) / 90.d0
-     &                + 11.d0 * uz(i-2,j,k) + 16.d0 * uz(i-1,j,k) )
-     &                / 27.d0
-        end do
+!       do i = 3, ptsx - 2
+!         uz(i,j,k) = ( dx * (  281.d0 * wy(i-2,j,k)
+!    &                       + 2056.d0 * wy(i-1,j,k)
+!    &                       + 1176.d0 * wy(i,j,k)
+!    &                       -  104.d0 * wy(i+1,j,k)
+!    &                       +   11.d0 * wy(i+2,j,k) ) / 90.d0
+!    &                + 11.d0 * uz(i-2,j,k) + 16.d0 * uz(i-1,j,k) )
+!    &                / 27.d0
+!       end do
 
-        if (my_rank.lt.numproc) then
-          aux(1) = uz(ptsx-inter,j,k)
-          aux(2) = uz(ptsx-inter+1,j,k)
-          call MPI_Send(aux, 2, MPI_COMPLEX16, my_rank + 1, 
-     &                  253, MPI_COMM_WORLD, ierr)
-         else
-          i = ptsx - 1
-          uz(i,j,k) = ( dx * ( 10.d0 * wy(i-2,j,k)
-     &                       + 57.d0 * wy(i-1,j,k)
-     &                       + 24.d0 * wy(i,j,k)
-     &                       -         wy(i+1,j,k) )
-     &                       + 33.d0 * uz(i-2,j,k)
-     &                       + 24.d0 * uz(i-1,j,k) ) / 57.d0
-          i = ptsx
-          uz(i,j,k) = ( dx * ( 251.d0 * wy(i,j,k)
-     &                       + 646.d0 * wy(i-1,j,k)
-     &                       - 264.d0 * wy(i-2,j,k)
-     &                       + 106.d0 * wy(i-3,j,k)
-     &                       -  19.d0 * wy(i-4,j,k) )
-     &                       + 720.d0 * uz(i-1,j,k) ) / 720.d0
-        end if
-      end do
+!       if (my_rank.lt.numproc) then
+!         aux(1) = uz(ptsx-inter,j,k)
+!         aux(2) = uz(ptsx-inter+1,j,k)
+!         call MPI_Send(aux, 2, MPI_COMPLEX16, my_rank + 1, 
+!    &                  253, MPI_COMM_WORLD, ierr)
+!        else
+!         i = ptsx - 1
+!         uz(i,j,k) = ( dx * ( 10.d0 * wy(i-2,j,k)
+!    &                       + 57.d0 * wy(i-1,j,k)
+!    &                       + 24.d0 * wy(i,j,k)
+!    &                       -         wy(i+1,j,k) )
+!    &                       + 33.d0 * uz(i-2,j,k)
+!    &                       + 24.d0 * uz(i-1,j,k) ) / 57.d0
+!         i = ptsx
+!         uz(i,j,k) = ( dx * ( 251.d0 * wy(i,j,k)
+!    &                       + 646.d0 * wy(i-1,j,k)
+!    &                       - 264.d0 * wy(i-2,j,k)
+!    &                       + 106.d0 * wy(i-3,j,k)
+!    &                       -  19.d0 * wy(i-4,j,k) )
+!    &                       + 720.d0 * uz(i-1,j,k) ) / 720.d0
+!       end if
+!     end do
 
-      call boundary_exchange_1stmode(uz)
+!     call boundary_exchange_1stmode(uz)
 
       ! for other modes the poisson eq is used
       call derparx(dwydx, wy)

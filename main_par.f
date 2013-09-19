@@ -262,8 +262,8 @@ c    &                    *  dt6 * ( dv1z(i,j,k) + dv2z(i,j,k) )
         
         fanal = stpp / 16
         
-        do t = t0, tt + 15 * fanal
-c       do t = t0, tt
+c       do t = t0, tt + 15 * fanal
+        do t = t0, tt
         
           ! first Runge-Kutta step
           call drv_gv(dv1x, dv1y, dv1z)
@@ -281,8 +281,8 @@ c       do t = t0, tt
           end do
           ! disturbance introductions
           if (my_rank.eq.0) then
-c           call gv_pert(t)
-            call ts2d_pert(t, 0.5d0)
+            call gv_pert(t)
+c           call ts2d_pert(t, 0.5d0)
 c           call ts3d_pert(t, 0.5d0)
           end if
           call loop(1d-5)
@@ -319,8 +319,8 @@ c           call ts3d_pert(t, 0.5d0)
           end do
           ! disturbance introductions
           if (my_rank.eq.0) then
-c           call gv_pert(t)
-            call ts2d_pert(t, 1.d0)
+            call gv_pert(t)
+c           call ts2d_pert(t, 1.d0)
 c           call ts3d_pert(t, 1.d0)
           end if
           call loop(1d-5)
@@ -643,7 +643,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! reads the derivative and Poisson coefficients
       open(1,file='pre_processing/coefs.bin',form='unformatted')
-      read(1) fp_fd_coef
+      read(1) fp_fd_coef_e
       read(1) sp_fd_coef
       read(1) cp_fd_coef
       read(1) pp_fd_coef
@@ -666,8 +666,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       close(unit=1)
 
       open(1,file='coefs.dat',status='unknown')
-      write(1,*) 'fp_fd'
-      write(1,*) fp_fd_coef
+      write(1,*) 'fp_fd_e'
+      write(1,*) fp_fd_coef_e
       write(1,*) 'sp_fd'
       write(1,*) sp_fd_coef
       write(1,*) 'cp_fd'
@@ -850,7 +850,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       close(unit=1)
 
       open(1,file='pre_processing/coefs.bin',form='unformatted')
-      read(1) fp_fd_coef
+      read(1) fp_fd_coef_e
       read(1) sp_fd_coef
       read(1) cp_fd_coef
       read(1) pp_fd_coef
@@ -873,8 +873,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       close(unit=1)
 
       open(1,file='coefs.dat',status='unknown')
-      write(1,*) 'fp_fd'
-      write(1,*) fp_fd_coef
+      write(1,*) 'fp_fd_e'
+      write(1,*) fp_fd_coef_e
       write(1,*) 'sp_fd'
       write(1,*) sp_fd_coef
       write(1,*) 'cp_fd'
@@ -952,17 +952,17 @@ c       Go(i) = 2.d0
         kc = Go(i+shift) * Go(i+shift) / dsqrt(Re)
         do j = 1, jmax
           varg(i,j) = kc
-          select case(cc)
-          case(2) 
-           varg(i,j) = varg(i,j) *
-     &                 2.d0*dsin((5.d0*x+3.d0)*pi/48.d0)
-          case(3) 
-           varg(i,j) = varg(i,j) *
-     &              (-1.d0)*dtanh(3.d0*(x-8.d0))
-          case(4) 
-           varg(i,j) = varg(i,j) *
-     &               0.5d0*(1.d0-dtanh(3.d0*(x-10.24d0)))
-          end select        
+!         select case(cc)
+!         case(2) 
+!          varg(i,j) = varg(i,j) *
+!    &                 2.d0*dsin((5.d0*x+3.d0)*pi/48.d0)
+!         case(3) 
+!          varg(i,j) = varg(i,j) *
+!    &              (-1.d0)*dtanh(3.d0*(x-8.d0))
+!         case(4) 
+!          varg(i,j) = varg(i,j) *
+!    &               0.5d0*(1.d0-dtanh(3.d0*(x-10.24d0)))
+!         end select        
         end do
       end do
 
@@ -1126,7 +1126,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       close(unit=1)
 
       open(1,file='pre_processing/coefs.bin',form='unformatted')
-      read(1) fp_fd_coef
+      read(1) fp_fd_coef_e
       read(1) sp_fd_coef
       read(1) cp_fd_coef
       read(1) pp_fd_coef
@@ -1149,8 +1149,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       close(unit=1)
 
       open(1,file='coefs.dat',status='unknown')
-      write(1,*) 'fp_fd'
-      write(1,*) fp_fd_coef
+      write(1,*) 'fp_fd_e'
+      write(1,*) fp_fd_coef_e
       write(1,*) 'sp_fd'
       write(1,*) sp_fd_coef
       write(1,*) 'cp_fd'
@@ -1357,8 +1357,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       common/vc/ varg, dvargdx
 
       ! linear or non-linear product calculations
-c     call lterms_gv(a, b, c, d)
-      call nlterms_gv(a, b, c, d)
+      call lterms_gv(a, b, c, d)
+c     call nlterms_gv(a, b, c, d)
 
       ! derivative calculations
       call derparx(dadx, a)
@@ -1587,7 +1587,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       common/derw/ d2uydx2
 
 c     A = 1d-4
-      A = 7.5d-3 * dsqrt(fac_y)
+      A = 1d-6 * dsqrt(fac_y)
 c     A = 1.85d-4
       
 c     if (t.eq.1) call wdata2(a)
@@ -1600,7 +1600,7 @@ c     if (t.eq.1) call wdata2(a)
       end if
       
       do i = i1 + 1, i2 - 1
-       do k = 2, 2
+       do k = 2, kfour
         uy(i,1,k)    = dcmplx( A*fcx2(i), 0.d0 )
         d2uydx2(i,k) = dcmplx( A*fcllx2(i), 0.d0 )
        enddo 
@@ -1768,10 +1768,11 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       complex*16 lapv(ptsx,kfour)
       complex*16 duydy(ptsx,jmax,kfour), dwzdx(ptsx,jmax,kfour)
 
-      call bzone
 c     if (erro.lt.1.d-5) call filter
       if (erro.lt.1.d-5) call filter_trid
 c     call filter_trid
+
+      call bzone
       call outuy(dwzdx)
       call poi_uy(dwzdx, erro)
       call poi_ux(duydy)

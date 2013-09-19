@@ -7,16 +7,16 @@
 
   ! General constants
   integer, parameter      :: my_form       = 1
-  real(kind=8), parameter :: U_1           = 27.935d0
-  real(kind=8), parameter :: L_1           = 0.18d0
-  real(kind=8), parameter :: N_1           = 1.56d-5
+  real(kind=8), parameter :: U_1           = 5.0d0
+  real(kind=8), parameter :: L_1           = 0.1d0
+  real(kind=8), parameter :: N_1           = 1.509479531d-5
   real(kind=8), parameter :: Re            = U_1*L_1/N_1
   real(kind=8), parameter :: fac_y         = 1.d0
-  integer, parameter      :: imax          = 473
-  real(kind=8), parameter :: dx            = 0.008d0
-  integer, parameter      :: jmax          = 177
-  real(kind=8), parameter :: dy0           = 1.8d-4*dsqrt(fac_y)
-  real(kind=8), parameter :: stf           = 1.01d0
+  integer, parameter      :: imax          = 433
+  real(kind=8), parameter :: dx            = 0.02962963d0
+  integer, parameter      :: jmax          = 321
+  real(kind=8), parameter :: dy0           = 0.15d0
+  real(kind=8), parameter :: stf           = 1.00d0
   real(kind=8), parameter :: x0            = 1.d0
   real(kind=8), parameter :: Pr            = 0.72d0
   integer, parameter      :: lvls          = 4
@@ -42,6 +42,7 @@
   use constants
 
   ! first derivative coefficients
+  real(kind=8)            :: fp_fd_coef_e(6)
   real(kind=8)            :: fp_fd_coef(7)
   real(kind=8)            :: sp_fd_coef(9)
   real(kind=8)            :: cp_fd_coef(8)

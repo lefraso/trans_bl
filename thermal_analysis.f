@@ -406,22 +406,22 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      subroutine tridyt(r,a,b,c,u)
+      subroutine tridyt(rhs,a,b,c,u)
 
       ! solves the tridiagonal matrix for the derivatives in y direction
       implicit none
       include 'par.for'
       integer j
       real*8 a(jmax), b(jmax), c(jmax), gam(jmax), bet
-      complex*16 r(jmax), u(jmax)
+      complex*16 rhs(jmax), u(jmax)
 
       bet  = b(1)
-      u(1) = r(1) / bet
+      u(1) = rhs(1) / bet
       do j = 2, jmax
         gam(j) = c(j-1) / bet
         bet    = b(j) - a(j) * gam(j)
 c       if (bet.eq.0.) pause 'tridag failed'
-        u(j)   = ( r(j) - a(j) * u(j-1) ) / bet
+        u(j)   = ( rhs(j) - a(j) * u(j-1) ) / bet
       end do
       do j = jmax - 1, 1, -1
         u(j) = u(j) - gam(j+1) * u(j+1)
@@ -431,22 +431,22 @@ c       if (bet.eq.0.) pause 'tridag failed'
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
-      subroutine tridyb(r,a,b,c,u)
+      subroutine tridyb(rhs,a,b,c,u)
 
       ! solves the tridiagonal matrix for the derivatives in y direction
       implicit none
       include 'par.for'
       integer j
       real*8 a(jmax), b(jmax), c(jmax), gam(jmax), bet
-      real*8 r(jmax), u(jmax)
+      real*8 rhs(jmax), u(jmax)
 
       bet  = b(1)
-      u(1) = r(1) / bet
+      u(1) = rhs(1) / bet
       do j = 2, jmax
         gam(j) = c(j-1) / bet
         bet    = b(j) - a(j) * gam(j)
 c       if (bet.eq.0.) pause 'tridag failed'
-        u(j)   = ( r(j) - a(j) * u(j-1) ) / bet
+        u(j)   = ( rhs(j) - a(j) * u(j-1) ) / bet
       end do
       do j = jmax - 1, 1, -1
         u(j) = u(j) - gam(j+1) * u(j+1)

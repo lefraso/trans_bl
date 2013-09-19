@@ -231,16 +231,33 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 !       Leandro e João Henrique
 
 !       Leandro e Larissa
-c       theta  = dble(k-1) / dble(kfour-1)
-c       gibbs0 = 1.d0+((- 6.d0*theta+15.d0)*theta-10.d0)*theta**3
-c       theta  = pi * dble(k) / dble(kfour)
-c       gibbs(k) = gibbs0 * (0.5d0 * (1.d0 + dcos(theta)))**0.6 !gooood
+c       theta    = dble(k-1) / dble(kfour-1)
+c       gibbs0   = 1.d0 + (( - 6.d0 * theta + 15.d0) * theta - 10.d0)
+c    &           * theta**3
+c       theta    = pi * dble(k) / dble(kfour)
+c       gibbs(k) = gibbs0 * (0.5d0 * (1.d0 + dcos(theta)))**0.6
 !       Leandro e Larissa
 
+!       Lanczos
+c       theta    = pi * dble(k-1) / dble(kfour-1)
+c       gibbs(k) = dsin(theta) / theta
+c       if (theta .eq. 0.d0) gibbs(k) = 1.d0
+!       Lanczos
+
+!       Exponencial
+        theta    = pi * dble(k-1) / dble(kfour-1)
+        gibbs(k) = dexp(-theta**2)
+!       Exponencial
+
+!       Raised cosine
+c       theta    = pi * dble(k-1) / dble(kfour-1)
+c       gibbs(k) = 0.5d0 * (1.d0 + dcos(theta))
+!       Raised cosine
       end do
 
       return
       end
+
 ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       subroutine cvirt
 
@@ -276,6 +293,10 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       call p_to_f(fxp,fx)
       call p_to_f(fyp,fy)
       call p_to_f(fzp,fz)
+
+      call gibbs_filter(fx)
+      call gibbs_filter(fy)
+      call gibbs_filter(fz)
 
       erro = 0.d0
       do k = 1, kphys

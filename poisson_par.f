@@ -141,7 +141,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
         sc(i,jmax-1,1) = v_kb(k) * wx(i,jmax-1,k) - dwzdx(i,jmax-1,k)
         sc(i,jmax,1) = lp_poi_coef(1,1) * 
      &                 (v_kb(k) * wx(i,jmax,k) - dwzdx(i,jmax,k))
-        sc(i,jmax,1) = 0.d0
+        sc(i,jmax,1) = dcmplx(0.d0,0.d0)
         if (my_form.eq.0.or.my_form.eq.4) then
           if (k.eq.1) then
            dya = dy * stf**(jmax-3)

@@ -256,7 +256,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! reads the derivative and Poisson coefficients
       open(1,file='../pre_processing/coefs.bin',form='unformatted')
-      read(1) fp_fd_coef
+      read(1) fp_fd_coef_e
       read(1) sp_fd_coef
       read(1) cp_fd_coef
       read(1) pp_fd_coef
@@ -378,7 +378,7 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
 
       ! reads the derivative and Poisson coefficients
       open(1,file='../pre_processing/coefs.bin',form='unformatted')
-      read(1) fp_fd_coef
+      read(1) fp_fd_coef_e
       read(1) sp_fd_coef
       read(1) cp_fd_coef
       read(1) pp_fd_coef

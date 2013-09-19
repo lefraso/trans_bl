@@ -37,7 +37,7 @@ subroutine init_base_flow
    lp(:,i) = lp_poi_coef
   enddo
   open(1,file='coefs.bin',form='unformatted')
-   write(1) fp_fd_coef
+   write(1) fp_fd_coef_e
    write(1) sp_fd_coef
    write(1) cp_fd_coef
    write(1) pp_fd_coef

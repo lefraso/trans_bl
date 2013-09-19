@@ -30,6 +30,8 @@ ccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &            F_nuz(ptsx,jmax,kfour),   nu_t(ptsx,jmax,kfour)
       common/tensor/ S_xxp, S_xyp, S_xzp, S_yyp, S_yzp, S_zzp
 
+      call calc_Sij
+
       call calc_nu_t_smag(nu_tp)
 c     call calc_nu_t_wale(nu_tp)
 
@@ -97,6 +99,75 @@ c     call calc_nu_t_wale(nu_tp)
       end
 
 cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
+      subroutine calc_Sij
+
+      implicit none
+      include 'par.for'
+      include 'comm.par'
+      include 'comm.var'
+      include 'comm.fourier'
+      integer i, j, k
+      real*8  S_xxp(ptsx,jmax,kphys), S_xyp(ptsx,jmax,kphys),
+     &        S_xzp(ptsx,jmax,kphys), S_yyp(ptsx,jmax,kphys),
+     &        S_yzp(ptsx,jmax,kphys), S_zzp(ptsx,jmax,kphys),
+     &        dudxp(ptsx,jmax,kphys), dudyp(ptsx,jmax,kphys), 
+     &        dudzp(ptsx,jmax,kphys), dvdxp(ptsx,jmax,kphys),
+     &        dvdyp(ptsx,jmax,kphys), dvdzp(ptsx,jmax,kphys),
+     &        dwdxp(ptsx,jmax,kphys), dwdyp(ptsx,jmax,kphys),
+     &        dwdzp(ptsx,jmax,kphys)
+      complex*16 dud(ptsx,jmax,kfour), dvd(ptsx,jmax,kfour), 
+     &           dwd(ptsx,jmax,kfour)
+      common/tensor/ S_xxp, S_xyp, S_xzp, S_yyp, S_yzp, S_zzp
+      common/derivatives/ dudxp, dvdxp, dwdxp, dudyp, dvdyp, dwdyp, 
+     &                    dudzp, dvdzp, dwdzp
+
+      call derparx(dud, ux)
+      call derparx(dvd, uy)
+      call derparx(dwd, uz)
+
+      call f_to_p(dudxp,dud)
+      call f_to_p(dvdxp,dvd)
+      call f_to_p(dwdxp,dwd)
+
+      call dery(dud, ux)
+      call deryfv(dvd, uy)
+      call dery(dwd, uz)
+
+      call f_to_p(dudyp,dud)
+      call f_to_p(dvdyp,dvd)
+      call f_to_p(dwdyp,dwd)
+
+      do k = 1, kfour
+        do j = 1, jmax
+          do i = 1, ptsx
+            dud(i,j,k) = v_kb(k) * ux(i,j,k)
+            dvd(i,j,k) = v_kb(k) * uy(i,j,k)
+            dwd(i,j,k) = v_kb(k) * uz(i,j,k)
+          end do
+        end do
+      end do
+
+      call f_to_p(dudzp,dud)
+      call f_to_p(dvdzp,dvd)
+      call f_to_p(dwdzp,dwd)
+
+      do k = 1, kphys
+        do j = 1, jmax
+          do i = 1, ptsx
+            S_xxp(i,j,k) = dudxp(i,j,k)
+            S_yyp(i,j,k) = dvdyp(i,j,k)
+            S_zzp(i,j,k) = dwdzp(i,j,k)
+            S_xyp(i,j,k) = 0.5d0 * (dudyp(i,j,k) + dvdxp(i,j,k))
+            S_xzp(i,j,k) = 0.5d0 * (dudzp(i,j,k) + dwdxp(i,j,k))
+            S_yzp(i,j,k) = 0.5d0 * (dvdzp(i,j,k) + dwdyp(i,j,k))
+          end do
+        end do
+      end do
+
+      return
+      end
+
+cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
       subroutine calc_nu_t_smag(nu_tp)
 
       implicit none
@@ -109,40 +180,8 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &        S_xzp(ptsx,jmax,kphys), S_yyp(ptsx,jmax,kphys),
      &        S_yzp(ptsx,jmax,kphys), S_zzp(ptsx,jmax,kphys),
      &        nu_tp(ptsx,jmax,kphys), damp, cte, y, y_plus, ratio
-      complex*16 S_xx(ptsx,jmax,kfour), S_xy(ptsx,jmax,kfour),
-     &           S_xz(ptsx,jmax,kfour), S_yy(ptsx,jmax,kfour),
-     &           S_yz(ptsx,jmax,kfour), S_zz(ptsx,jmax,kfour), 
-     &           dvdx(ptsx,jmax,kfour)
+      complex*16 dvdx(ptsx,jmax,kfour)
       common/tensor/ S_xxp, S_xyp, S_xzp, S_yyp, S_yzp, S_zzp
-
-      ! S_xx = dudx
-      call derparx(S_xx, ux)
-      ! S_yy = dvdy
-      call deryfv(S_yy, uy)
-      ! S_xy = dudy (variable economy)
-      call dery(S_xy, ux)
-      ! S_yz = dwdy (variable economy)
-      call dery(S_yz, uz)
-      call derparx(dvdx, uy)
-      ! S_xz = dwdx (variable economy)
-      call derparx(S_xz, uz)
-      do k = 1, kfour
-        do j = 1, jmax
-          do i = 1, ptsx
-            S_xy(i,j,k) = 0.5d0 * (S_xy(i,j,k) + dvdx(i,j,k))
-            S_xz(i,j,k) = 0.5d0 * (S_xz(i,j,k) + v_kb(k) * ux(i,j,k))
-            S_yz(i,j,k) = 0.5d0 * (S_yz(i,j,k) + v_kb(k) * uy(i,j,k))
-            S_zz(i,j,k) = v_kb(k) * uz(i,j,k)
-          end do
-        end do
-      end do
-
-      call f_to_p(S_xxp,S_xx)
-      call f_to_p(S_yyp,S_yy)
-      call f_to_p(S_zzp,S_zz)
-      call f_to_p(S_xyp,S_xy)
-      call f_to_p(S_xzp,S_xz)
-      call f_to_p(S_yzp,S_yz)
 
       do k = 1, kphys
         do j = 1, jmax
@@ -188,64 +227,26 @@ cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc
      &       S_xxp(ptsx,jmax,kphys), S_xyp(ptsx,jmax,kphys),
      &       S_xzp(ptsx,jmax,kphys), S_yyp(ptsx,jmax,kphys),
      &       S_yzp(ptsx,jmax,kphys), S_zzp(ptsx,jmax,kphys), 
-     &       s12, s13, s23, ss, eqnA, s11d, s22d, s33d, s12d, 
+     &       var, ss, eqnA, s11d, s22d, s33d, s12d, 
      &       s13d, s23d, sdsd
-      complex*16 dudx(ptsx,jmax,kfour), dudy(ptsx,jmax,kfour), 
-     &           dudz(ptsx,jmax,kfour), dvdx(ptsx,jmax,kfour), 
-     &           dvdy(ptsx,jmax,kfour), dvdz(ptsx,jmax,kfour), 
-     &           dwdx(ptsx,jmax,kfour), dwdy(ptsx,jmax,kfour), 
-     &           dwdz(ptsx,jmax,kfour)
       common/tensor/ S_xxp, S_xyp, S_xzp, S_yyp, S_yzp, S_zzp
-
-      call derparx(dudx, ux)
-      call derparx(dvdx, uy)
-      call derparx(dwdx, uz)
-      call dery(dudy, ux)
-      call deryfv(dvdy, uy)
-      call dery(dwdy, uz)
-
-      do k = 1, kfour
-        do j = 1, jmax
-          do i = 1, ptsx
-            dudz(i,j,k) = v_kb(k) * ux(i,j,k)
-            dvdz(i,j,k) = v_kb(k) * uy(i,j,k)
-            dwdz(i,j,k) = v_kb(k) * uz(i,j,k)
-          end do
-        end do
-      end do
-
-      call f_to_p(dudxp,dudx)
-      call f_to_p(dudyp,dudy)
-      call f_to_p(dudzp,dudz)
-      call f_to_p(dvdxp,dvdx)
-      call f_to_p(dvdyp,dvdy)
-      call f_to_p(dvdzp,dvdz)
-      call f_to_p(dwdxp,dwdx)
-      call f_to_p(dwdyp,dwdy)
-      call f_to_p(dwdzp,dwdz)
+      common/derivatives/ dudxp, dvdxp, dwdxp, dudyp, dvdyp, dwdyp, 
+     &                    dudzp, dvdzp, dwdzp
 
       do k = 1, kphys
         do j = 1, jmax
           do i = 1, ptsx
-
-            S_xxp(i,j,k) = dudxp(i,j,k)
-            S_yyp(i,j,k) = dvdyp(i,j,k)
-            S_zzp(i,j,k) = dwdzp(i,j,k)
-            S_xyp(i,j,k) = 0.5d0 * (dudyp(i,j,k) + dvdxp(i,j,k))
-            S_xzp(i,j,k) = 0.5d0 * (dudzp(i,j,k) + dwdxp(i,j,k))
-            S_yzp(i,j,k) = 0.5d0 * (dvdzp(i,j,k) + dwdyp(i,j,k))
-
-            s12 = 0.5d0 * (dudyp(i,j,k) + dvdxp(i,j,k))
-            s13 = 0.5d0 * (dudzp(i,j,k) + dwdxp(i,j,k))
-            s23 = 0.5d0 * (dvdzp(i,j,k) + dwdyp(i,j,k))
-            ss  = ( dudxp(i,j,k)*dudxp(i,j,k) + 
+        
+            var = ( dudxp(i,j,k)*dudxp(i,j,k) + 
      &              dvdyp(i,j,k)*dvdyp(i,j,k) + 
-     &              dwdzp(i,j,k)*dwdzp(i,j,k) +
-     &          2.d0*s12*s12 + 2.d0*s13*s13 + 2.d0*s23*s23 )
+     &              dwdzp(i,j,k)*dwdzp(i,j,k) )
 
-            eqnA = dudxp(i,j,k)*dudxp(i,j,k) + 
-     &             dvdyp(i,j,k)*dvdyp(i,j,k) + 
-     &             dwdzp(i,j,k)*dwdzp(i,j,k) +
+            ss  = ( var + 
+     &          2.d0*S_xyp(i,j,k)*S_xyp(i,j,k)+
+     &          2.d0*S_xzp(i,j,k)*S_xzp(i,j,k)+
+     &          2.d0*S_yzp(i,j,k)*S_yzp(i,j,k))
+
+            eqnA = var +
      &        2.d0*dudyp(i,j,k)*dvdxp(i,j,k) +
      &        2.d0*dudzp(i,j,k)*dwdxp(i,j,k) +
      &        2.d0*dvdzp(i,j,k)*dwdyp(i,j,k)
